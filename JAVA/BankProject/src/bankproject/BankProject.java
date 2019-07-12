@@ -1,44 +1,53 @@
 package bankproject;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagLayout;
 import javax.swing.*;
 import java.awt.event.*;
-import java.util.Random;
+import java.util.*;
 
 /**
  *
  * @author KrIstIaN
  */
 public class BankProject implements ActionListener{
-JFrame[] f = new JFrame[7];
+JFrame[] f = new JFrame[8];
 JFrame popUp = new JFrame();
-JButton[] MB = new JButton[7];
+JButton[] MB = new JButton[8];
 JButton cnfrm = new JButton("Confirm");
 JButton cncl = new JButton("Cancel");
 JLabel accNum = new JLabel("Account Number:");
 JLabel val = new JLabel();
 JTextField accNumField = new JTextField();
-JTextField [] tfield = new JTextField[6]; 
+JTextField[] tfield = new JTextField[6]; 
 Account[] accountList = new Account[50];
+Stack<String> history = new Stack<String>();  
+Stack<String> amount = new Stack<String>();  
+Stack<String> type = new Stack<String>();  
+JPanel historyPane = new JPanel(new GridBagLayout());
+BoxLayout boxLayout = new BoxLayout(historyPane, BoxLayout.Y_AXIS);
+JScrollPane historyScroll = new JScrollPane(historyPane);
+
 int ctr = 0;
 int state = 0;
     BankProject(){
         String[] title = {"New Account", "Balance Inquiry", "Deposit", 
-            "Withdraw", "Client Profile", "Close Account", "Exit"};
+            "Withdraw", "Client Profile", "Close Account", "History", "Exit"};
         f[0] = new JFrame("Java Bank Project");
-        for (int i = 1; i < 7; i++){
+        for (int i = 1; i < 8; i++){
             f[i] = new JFrame(title[i - 1]);
         }
         
 
         int x = 50;
-        for (int i = 0; i < 7; i++){
+        for (int i = 0; i < 8; i++){
             MB[i] = new JButton(title[i]);
             MB[i].setBounds(75, x, 150, 20);
             x += 20;
             f[0].add(MB[i]);
             MB[i].addActionListener(this);
-            if (i != 0)
+            if (i != 0 && i != 7 )
                 MB[i].setEnabled(false);
         }
                 
@@ -64,10 +73,13 @@ int state = 0;
             x += 40;
         }
         
-        
-   
+//------------------------------------------------------------------------------------------        
+    historyPane.setLayout(boxLayout);
+    
+    historyScroll.setBounds(15, 30, 285, 270);
+    historyScroll.setBorder(BorderFactory.createEmptyBorder());
 //------------------------------------------------------------------------------------------  
-        for (int i = 1; i < 7; i++){
+        for (int i = 1; i < 8; i++){
             f[i].setSize(300,300);
             f[i].setLayout(null);
             f[i].setVisible(false);
@@ -75,6 +87,8 @@ int state = 0;
         }
 //------------------------------------------------------------------------------------------ 
 
+        
+        
         f[0].setSize(300,300);
         f[0].setLayout(null);
         f[0].setVisible(true);
@@ -155,11 +169,35 @@ int state = 0;
             f[6].setVisible(true);
 
         }
-        if (e.getSource() == MB[6]){ //EXIT
+        if (e.getSource() == MB[6]){ //HISTORY
+            historyPane.removeAll();
+            Iterator<String> itr = history.iterator();
+            Iterator<String> itr2 = amount.iterator();
+            Iterator<String> itr3 = type.iterator();
+            JLabel jLabel = new JLabel();
+            jLabel.setBounds(15, 10, 230, 20);
+            f[7].add(jLabel);
+            jLabel.setText("No.  |  Acc No.     Amount       Trans. Type");
+            int i = 1;
+            while(itr.hasNext()){ 
+                jLabel = new JLabel(i + ".     |    " + itr.next() + "         " + itr2.next() + "         " + itr3.next());
+                i++;
+                historyPane.add(jLabel);
+                historyPane.add(Box.createRigidArea(new Dimension(1, 5)));
+            }
+            f[7].add(historyScroll);
+            f[7].setVisible(true);
+        }
+        if (e.getSource() == MB[7]){ //EXIT
             f[0].dispose();
 
         }
+        if (e.getSource() == cncl){
+            f[state].dispose();
+        }
         if (e.getSource() == cnfrm){
+            if (state != 1)
+                MB[6].setEnabled(true);
             if (state == 1){ //NEW ACCOUNT
                 try{      
                     boolean w = false;
@@ -195,7 +233,7 @@ int state = 0;
                                     f[1].remove(tfield[i]);
                                 ctr += 1;
                                 f[1].dispose();
-                                for (i = 1; i < 7; i++)
+                                for (i = 1; i < 6; i++)
                                     MB[i].setEnabled(true);
                                 break;
                             }
@@ -218,7 +256,10 @@ int state = 0;
                 if (z != 404){
                     JOptionPane.showMessageDialog(popUp, "Account Balance: " + Float.toString(accountList[z].deposit),
                         "Balance Inquiry", JOptionPane.PLAIN_MESSAGE);
-                        f[2].dispose();
+                    history.push(Integer.toString(accountList[z].accNum));  
+                    amount.push(Float.toString(0));
+                    type.push("BALANCE INQUIRY");
+                    f[2].dispose();
                 }
             }
             if (state == 3){ //DEPOSIT
@@ -232,7 +273,10 @@ int state = 0;
                             JOptionPane.showMessageDialog(popUp, "You deposited: " + tfield[0].getText() + 
                                 " + interest(" + Double.toString(interest) + ")",
                                 "Deposit", JOptionPane.PLAIN_MESSAGE);
-                                f[3].dispose();
+                            history.push(Integer.toString(accountList[z].accNum));  
+                            amount.push(Double.toString(Float.parseFloat(tfield[0].getText()) + interest));
+                            type.push("DEPOSIT");
+                            f[3].dispose();
                         }
                         else
                             JOptionPane.showMessageDialog(popUp, "Deposit must not be less than 100",
@@ -261,7 +305,10 @@ int state = 0;
                             accountList[z].deposit -= Float.parseFloat(tfield[0].getText());
                             JOptionPane.showMessageDialog(popUp, "You withdrawed: " + tfield[0].getText(),
                                 "Withdraw", JOptionPane.PLAIN_MESSAGE);
-                                f[4].dispose();
+                            history.push(Integer.toString(accountList[z].accNum));  
+                            amount.push(tfield[0].getText());
+                            type.push("WITHDRAW");
+                            f[4].dispose();
                         }
                     }
                 }catch(NumberFormatException x){
