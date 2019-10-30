@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="TextEncryptor:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/TextEncryptor_jar</output-path>
+    <root id="archive" name="TextEncryptor.jar">
+      <element id="module-output" name="TextEncryptor" />
+    </root>
+  </artifact>
+</component>
