@@ -4,10 +4,12 @@ import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
-public class test implements ItemListener {
+public class test implements ItemListener, ActionListener {
 
 
     test() {
@@ -102,5 +104,10 @@ public class test implements ItemListener {
     }
 
     public void itemStateChanged(ItemEvent evt) {
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
     }
 }

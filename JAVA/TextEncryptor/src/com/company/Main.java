@@ -3,29 +3,44 @@ package com.company;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 public class Main extends MouseAdapter implements DocumentListener, ActionListener, ItemListener {
     private JTextArea inField = new JTextArea();
     private JTextArea outField = new JTextArea();
-    private JTextField shiftOrKey_1 = new JTextField("1");
-    private JTextField shiftOrKey_2 = new JTextField("1");
-    private JLabel shiftOrkey1Label = new JLabel("Shift");
-    private JLabel shiftOrkey2Label = new JLabel("Key 2");
+    private JTextField caesarShift = new JTextField("1");
+    private JTextField vignereKey = new JTextField("Encrypt");
+    private JTextField affineKey_1 = new JTextField("1");
+    private JTextField affineKey_2 = new JTextField("1");
+    private JPanel optionCards;
+    private JButton caesarSub = new JButton();
+    private JButton caesarAdd = new JButton();
+    private JButton affineSub1 = new JButton();
+    private JButton affineAdd1 = new JButton();
+    private JButton affineSub2 = new JButton();
+    private JButton affineAdd2 = new JButton();
     private String letters;
     private JLabel error = new JLabel();
-    private JButton add1 = new JButton();
-    private JButton add2 = new JButton();
-    private JButton sub1 = new JButton();
-    private JButton sub2 = new JButton();
     private JComboBox<String> cipher;
     private JComboBox<String> encodeDecode;
-    private JPanel optionPanel2 = new JPanel();
-    private Component rigid = Box.createRigidArea(new Dimension(110,0));
         private Main(){
             JFrame Main = new JFrame("Text Encryptor");
             Main.setLayout( new GridBagLayout());
+
+            JLabel caesarLabel = new JLabel(" Shift");
+            JLabel vignereLabel = new JLabel(" Key");
+            JLabel affineLabel = new JLabel(" Key 1                                  Key 2");
+
+            caesarShift.setHorizontalAlignment(JTextField.CENTER);
+            vignereKey.setHorizontalAlignment(JTextField.CENTER);
+            affineKey_1.setHorizontalAlignment(JTextField.CENTER);
+            affineKey_2.setHorizontalAlignment(JTextField.CENTER);
+
+            caesarLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+            vignereLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+            affineLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
             String[] ciphers = {"Caesar Cipher", "Viegnere Cipher", "Atbash Cipher", "Affine Cipher"};
             String[] options = {"Encode", "Decode"};
@@ -38,21 +53,38 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
             encodeDecode.addItemListener(this);
             cipher.addItemListener(this);
             inField.getDocument().addDocumentListener(this);
-            add1.addActionListener(this);
-            sub1.addActionListener(this);
-            add2.addActionListener(this);
-            sub2.addActionListener(this);
-            add1.addMouseListener(this);
-            sub1.addMouseListener(this);
-            add2.addMouseListener(this);
-            sub2.addMouseListener(this);
 
-            shiftOrKey_1.getDocument().addDocumentListener(this);
-            shiftOrKey_2.getDocument().addDocumentListener(this);
-            add1.setIcon(new ImageIcon(getClass().getResource("/images/add.JPG")));
-            sub1.setIcon(new ImageIcon(getClass().getResource("/images/sub.JPG")));
-            add2.setIcon(new ImageIcon(getClass().getResource("/images/add.JPG")));
-            sub2.setIcon(new ImageIcon(getClass().getResource("/images/sub.JPG")));
+            caesarSub.addActionListener(this);
+            caesarAdd.addActionListener(this);
+
+            affineSub1.addActionListener(this);
+            affineAdd1.addActionListener(this);
+            affineSub2.addActionListener(this);
+            affineAdd2.addActionListener(this);
+
+
+
+            caesarSub.addMouseListener(this);
+            caesarAdd.addMouseListener(this);
+            affineSub1.addMouseListener(this);
+            affineAdd1.addMouseListener(this);
+            affineSub2.addMouseListener(this);
+            affineAdd2.addMouseListener(this);
+
+
+            caesarShift.getDocument().addDocumentListener(this);
+            vignereKey.getDocument().addDocumentListener(this);
+            affineKey_1.getDocument().addDocumentListener(this);
+            affineKey_2.getDocument().addDocumentListener(this);
+
+
+            caesarSub.setIcon(new ImageIcon(getClass().getResource("/images/sub.JPG")));
+            caesarAdd.setIcon(new ImageIcon(getClass().getResource("/images/add.JPG")));
+            affineSub1.setIcon(new ImageIcon(getClass().getResource("/images/sub.JPG")));
+            affineAdd1.setIcon(new ImageIcon(getClass().getResource("/images/add.JPG")));
+            affineSub2.setIcon(new ImageIcon(getClass().getResource("/images/sub.JPG")));
+            affineAdd2.setIcon(new ImageIcon(getClass().getResource("/images/add.JPG")));
+
 
 
             inField.setLineWrap(true);
@@ -60,16 +92,25 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
             JScrollPane inScroll = new JScrollPane(inField);
             JScrollPane outScroll = new JScrollPane(outField);
 
-            add1.setPreferredSize(new Dimension(40, 26));
-            sub1.setPreferredSize(new Dimension(40, 26));
-            add2.setPreferredSize(new Dimension(40, 26));
-            sub2.setPreferredSize(new Dimension(40, 26));
-            shiftOrKey_1.setPreferredSize(new Dimension(40, 26));
-            shiftOrKey_2.setPreferredSize(new Dimension(40, 26));
-            shiftOrKey_2.setVisible(false);
+            Dimension shiftKey = new Dimension(40, 26);
+
+            caesarSub.setPreferredSize(shiftKey);
+            caesarAdd.setPreferredSize(shiftKey);
+
+            affineSub1.setPreferredSize(shiftKey);
+            affineAdd1.setPreferredSize(shiftKey);
+            affineAdd2.setPreferredSize(shiftKey);
+            affineSub2.setPreferredSize(shiftKey);
+
+            caesarShift.setPreferredSize(shiftKey);
+            affineKey_1.setPreferredSize(shiftKey);
+            affineKey_2.setPreferredSize(shiftKey);
+
+
             Font font = new Font("Cambria", Font.PLAIN, 15);
 
-            shiftOrKey_1.setFont(font);
+            caesarShift.setFont(font);
+            vignereKey.setFont(font);
             inField.setFont(font);
             outField.setFont(font);
             cipher.setFont(font);
@@ -77,39 +118,59 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
             encodeDecode.setFont(font);
             encodeDecode.setForeground(Color.BLACK);
 
-            add2.setVisible(false);
-            sub2.setVisible(false);
-            shiftOrKey_1.setHorizontalAlignment(JTextField.CENTER);
-            shiftOrKey_2.setHorizontalAlignment(JTextField.CENTER);
-            error.setText("ERROR TEST");
 
+            optionCards = new JPanel(new CardLayout());
+            
+
+            JPanel caesarCard = new JPanel();
+            caesarCard.setLayout(new BoxLayout(caesarCard, BoxLayout.PAGE_AXIS));
+
+            JPanel caesarPanel = new JPanel();
+            caesarPanel.add(caesarSub);
+            caesarPanel.add(caesarShift);
+            caesarPanel.add(caesarAdd);
+
+            caesarCard.add(caesarLabel);
+            caesarCard.add(caesarPanel);
+
+            JPanel vignereCard = new JPanel();
+            vignereCard.setLayout(new BoxLayout(vignereCard, BoxLayout.PAGE_AXIS));
+            vignereKey.setHorizontalAlignment(vignereKey.CENTER);
+            vignereCard.add(vignereLabel);
+            vignereCard.add(vignereKey);
+
+            JPanel atbashCard = new JPanel();
+            JLabel hehe = new JLabel("ATBASH CIPHER");
+            hehe.setFont( new Font("Cambria", Font.PLAIN, 25));
+            atbashCard.add(hehe);
+
+            JPanel affineCard = new JPanel();
+            affineCard.setLayout(new BoxLayout(affineCard, BoxLayout.PAGE_AXIS));
+            JPanel affinePanel = new JPanel();
+            affinePanel.add(affineSub1);
+            affinePanel.add(affineKey_1);
+            affinePanel.add(affineAdd1);
+            affinePanel.add(affineSub2);
+            affinePanel.add(affineKey_2);
+            affinePanel.add(affineAdd2);
+
+            affineCard.add(affineLabel);
+            affineCard.add(affinePanel);
+
+            optionCards.add(caesarCard, ciphers[0]);
+            optionCards.add(vignereCard, ciphers[1]);
+            optionCards.add(atbashCard, ciphers[2]);
+            optionCards.add(affineCard, ciphers[3]);
 
             JPanel topPanel = new JPanel();
             topPanel.setLayout(new GridBagLayout());
             JPanel optionPanel1 = new JPanel();
-            JPanel optionPanel2Cont = new JPanel();
-            optionPanel2Cont.setLayout(new BoxLayout(optionPanel2Cont, BoxLayout.PAGE_AXIS));
             optionPanel1.setLayout(new FlowLayout());
             optionPanel1.add(cipher);
             optionPanel1.add(encodeDecode);
 
             JPanel labelPanel = new JPanel();
             labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.LINE_AXIS));
-
-            labelPanel.add(shiftOrkey1Label);
-            labelPanel.add(rigid);
-            labelPanel.add(shiftOrkey2Label);
-            rigid.setVisible(false);
-            shiftOrkey2Label.setVisible(false);
-
-            optionPanel2.add(sub1);
-            optionPanel2.add(shiftOrKey_1);
-            optionPanel2.add(add1);
-            optionPanel2.add(sub2);
-            optionPanel2.add(shiftOrKey_2);
-            optionPanel2.add(add2);
-            optionPanel2Cont.add(labelPanel);
-            optionPanel2Cont.add(optionPanel2);
 
             JPanel textPanel = new JPanel();
             textPanel.add(error);
@@ -142,7 +203,7 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
             topPanel.add(optionPanel1, c);
 
             c.gridy = 1;
-            topPanel.add(optionPanel2Cont, c);
+            topPanel.add(optionCards, c);
 
             c.gridy = 2;
             topPanel.add(textPanel, c);
@@ -161,18 +222,28 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
             Main.add(cipherPanel, c);
 
 
+
+
+
+
             optionPanel1.setBackground(Color.decode("#77D9FF"));
-            optionPanel2.setBackground(Color.decode("#77D9FF"));
             labelPanel.setBackground(Color.decode("#77D9FF"));
-            optionPanel2Cont.setBackground(Color.decode("#77D9FF"));
+            caesarCard.setBackground(Color.decode("#77D9FF"));
+            caesarPanel.setBackground(Color.decode("#77D9FF"));
+            vignereCard.setBackground(Color.decode("#77D9FF"));
+            atbashCard.setBackground(Color.decode("#77D9FF"));
+            affineCard.setBackground(Color.decode("#77D9FF"));
+            affinePanel.setBackground(Color.decode("#77D9FF"));
             textPanel.setBackground(Color.decode("#77D9FF"));
             plainPanel.setBackground(Color.decode("#77D9FF"));
             cipherPanel.setBackground(Color.decode("#77D9FF"));
             Main.getContentPane().setBackground(Color.decode("#77D9FF"));
-            add1.setBackground(Color.decode("#D1F2FF"));
-            sub1.setBackground(Color.decode("#D1F2FF"));
-            add2.setBackground(Color.decode("#D1F2FF"));
-            sub2.setBackground(Color.decode("#D1F2FF"));
+
+
+            affineSub1.setBackground(Color.decode("#D1F2FF"));
+            affineAdd1.setBackground(Color.decode("#D1F2FF"));
+            affineSub2.setBackground(Color.decode("#D1F2FF"));
+            affineAdd2.setBackground(Color.decode("#D1F2FF"));
 
 
             Main.setResizable(true);
@@ -183,7 +254,6 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
     }
     private void cipherDecipher(){
         if (validateShiftOrKey()) {
-            error.setText("");
             String text = "";
             switch (cipher.getSelectedIndex()) {
                 case 0:
@@ -210,7 +280,7 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
         String[] textField = new String[2];
         textField[0] = inField.getText();
         textField[1] = outField.getText();
-        int cShift = Integer.parseInt(shiftOrKey_1.getText());
+        int cShift = Integer.parseInt(caesarShift.getText());
         text = new StringBuilder(textField[encodeDecode]);
         for (int i = 0; i < textField[encodeDecode].length(); i++) {
             int val = text.charAt(i);
@@ -244,9 +314,9 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
         textField[1] = outField.getText();
         for(int i = 0; i < textField[encodeDecode].length(); i++){
             if(isAlpha(Character.toString(textField[encodeDecode].charAt(i)))) {
-                text.append(shiftOrKey_1.getText().charAt(x));
+                text.append(vignereKey.getText().charAt(x));
                 x++;
-                if (x == shiftOrKey_1.getText().length())
+                if (x == vignereKey.getText().length())
                     x = 0;
             }
             else
@@ -315,7 +385,7 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
         if (encodeDecode == 1){
             int inverse = 0;
             for(int i = 0; i < 26; i++){
-                inverse = (i * Integer.parseInt(shiftOrKey_1.getText())) % 26;
+                inverse = (i * Integer.parseInt(affineKey_1.getText())) % 26;
                 if (inverse == 1) {
                     inverse = i;
                     break;
@@ -329,13 +399,13 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
                     continue;
                 }
                 if(index <= 25){
-                    val = (inverse * (index - Integer.parseInt(shiftOrKey_2.getText()))) % 26;
+                    val = (inverse * (index - Integer.parseInt(affineKey_2.getText()))) % 26;
                     if (val < 0)
                         val += 26;
                 }
                 else if (index <= 51){
                     index -= 26;
-                    val = (inverse * (index - Integer.parseInt(shiftOrKey_2.getText()))) % 26;
+                    val = (inverse * (index - Integer.parseInt(affineKey_2.getText()))) % 26;
                     if (val < 0)
                         val += 26;
                     val += 26;
@@ -352,14 +422,14 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
             }
             int val = 0;
             if(index <= 25){
-                val = Integer.parseInt(shiftOrKey_1.getText()) * index +
-                        Integer.parseInt(shiftOrKey_2.getText()) % 26;
+                val = Integer.parseInt(affineKey_1.getText()) * index +
+                        Integer.parseInt(affineKey_2.getText()) % 26;
                 while(val >= 26)
                     val -= 26;
             }else if (index <= 51){
                 index -= 26;
-                val = Integer.parseInt(shiftOrKey_1.getText()) * index +
-                        Integer.parseInt(shiftOrKey_2.getText()) % 26;
+                val = Integer.parseInt(affineKey_1.getText()) * index +
+                        Integer.parseInt(affineKey_2.getText()) % 26;
                 while(val >= 26)
                     val -= 26;
                 val+= 26;
@@ -369,122 +439,153 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
         return text.toString();
     }
     public void actionPerformed (ActionEvent e){
-        if(e.getSource() == add1)
-            addSub(0, shiftOrKey_1);
-        else if(e.getSource() == sub1)
-            addSub(1, shiftOrKey_1);
-        else if(e.getSource() == add2)
-            addSub(2, shiftOrKey_2);
-        else if(e.getSource() == sub2)
-            addSub(3, shiftOrKey_2);
+        if(e.getSource() == caesarSub)
+            addSub(0, caesarShift);
+        else if(e.getSource() == caesarAdd)
+            addSub(1, caesarShift);
+        else if(e.getSource() == affineSub1)
+            addSub(0, affineKey_1);
+        else if(e.getSource() == affineAdd1)
+            addSub(1, affineKey_1);
+        else if(e.getSource() == affineSub2)
+            addSub(2, affineKey_2);
+        else if(e.getSource() == affineAdd2)
+            addSub(3, affineKey_2);
         cipherDecipher();
     }
     private void addSub(int e, JTextField shiftOrKey){
-    if(!validateShiftOrKey()) {
-        shiftOrKey.setText("1");
-        return;
-    }
-    shiftOrKey.getDocument().removeDocumentListener(this);
-    int x = Integer.parseInt(shiftOrKey.getText());
-    if(cipher.getSelectedIndex() == 0){
-        if (e == 0)
-            shiftOrKey.setText(String.valueOf(x + 1));
-        else if(e == 1)
-            shiftOrKey.setText(String.valueOf(x - 1));
-    }
-    else if(cipher.getSelectedIndex() == 3){
-        int[] factors  = {2, 13, 26};
-        if (e == 0){
-            x++;
-            while(true){
-                boolean bool = true;
-                for(Integer i : factors){
-                    if(x % i == 0){
-                        bool = false;
-                        x++;
+        if(!validateShiftOrKey()) {
+            shiftOrKey.setText("1");
+            return;
+        }
+        shiftOrKey.getDocument().removeDocumentListener(this);
+        int x = Integer.parseInt(shiftOrKey.getText());
+        if(cipher.getSelectedIndex() == 0){
+            if (e == 1)
+                shiftOrKey.setText(String.valueOf(x + 1));
+            else if(e == 0)
+                shiftOrKey.setText(String.valueOf(x - 1));
+        }
+        else if(cipher.getSelectedIndex() == 3){
+            int[] factors  = {2, 13, 26};
+            if (e == 0){
+                for(x -= 1; x > 0; x--){
+                    boolean bool = true;
+                    for(Integer i : factors){
+                        if(x % i == 0){
+                            bool = false;
+                            break;
+                        }
+                    }
+                    if (bool) {
+                        shiftOrKey.setText(String.valueOf(x));
                         break;
                     }
                 }
-                if (bool) {
-                   shiftOrKey.setText(String.valueOf(x));
-                   break;
-                }
             }
-        }
-        else if (e == 1){
-            for(x -= 1; x > 0; x--){
-                boolean bool = true;
-                for(Integer i : factors){
-                    if(x % i == 0){
-                        bool = false;
+            else if (e == 1){
+                x++;
+                while(true){
+                    boolean bool = true;
+                    for(Integer i : factors){
+                        if(x % i == 0){
+                            bool = false;
+                            x++;
+                            break;
+                        }
+                    }
+                    if (bool) {
+                        shiftOrKey.setText(String.valueOf(x));
                         break;
                     }
                 }
-                if (bool) {
-                    shiftOrKey.setText(String.valueOf(x));
-                    break;
-                }
+            }
+            else if (e == 2){
+                if (x > 1)
+                    shiftOrKey.setText(String.valueOf(x - 1));
+            }
+            else if (e == 3){
+                shiftOrKey.setText(String.valueOf(x + 1));
             }
         }
-        else if (e == 2){
-            shiftOrKey.setText(String.valueOf(x + 1));
-        }
-        else if (e == 3){
-            if (x > 1)
-               shiftOrKey.setText(String.valueOf(x - 1));
-        }
-    }
-    shiftOrKey.getDocument().addDocumentListener(this);
+        shiftOrKey.getDocument().addDocumentListener(this);
     }
     private boolean validateShiftOrKey(){
         switch (cipher.getSelectedIndex()) {
             case 0:
-                if (shiftOrKey_1.getText().isEmpty() || !isNumeric(shiftOrKey_1.getText())) {
+                if (caesarShift.getText().isEmpty() || isNotNumeric(caesarShift.getText())) {
+                    caesarShift.setBorder(new LineBorder(Color.red,1));
                     error.setText("Shift must not be blank and must be numeric");
                     return false;
                 }
+                caesarShift.setBorder(new JTextField().getBorder());
                 break;
             case 1:
-                if (!isAlpha(shiftOrKey_1.getText())) {
+                if (!isAlpha(vignereKey.getText())) {
+                    vignereKey.setBorder(new LineBorder(Color.red,1));
                     error.setText("Key must not be blank and must contain letters only");
                     return false;
                 }
+                vignereKey.setBorder(new JTextField().getBorder());
                 break;
             case 3:
-                if (!(isNumeric(shiftOrKey_1.getText()) && isNumeric(shiftOrKey_1.getText()))) {
+                boolean key1 = true;
+                boolean key2 = true;
+                if (isNotNumeric(affineKey_1.getText())) {
+                    affineKey_1.setBorder(new LineBorder(Color.red,1));
                     error.setText("Shift must not be blank and must be numeric");
-                    return false;
+                    key1 = false;
                 }
-                int x = Integer.parseInt(shiftOrKey_1.getText());
-                if (x <= 0 || Integer.parseInt(shiftOrKey_2.getText()) <= 0) {
+                else if (Integer.parseInt(affineKey_1.getText()) <= 0){
+                    affineKey_1.setBorder(new LineBorder(Color.red,1));
                     error.setText("The value must be greater than 0");
-                    return false;
+                    key1 = false;
                 }
-                for (int i = 0; i < shiftOrKey_1.getDocument().getLength(); i++) {
-                    int[] factors = {2, 13, 26};
-                    for (Integer j : factors) {
-                        if (x % j == 0) {
-                            error.setText("The value must be coprime to the size of the alphabet(26)");
-                            return false;
+                else {
+                    int x = Integer.parseInt(affineKey_1.getText());
+                    for (int i = 0; i < affineKey_1.getDocument().getLength(); i++) {
+                        int[] factors = {2, 13, 26};
+                        for (Integer j : factors) {
+                            if (x % j == 0) {
+                                affineKey_1.setBorder(new LineBorder(Color.red, 1));
+                                error.setText("The value must be coprime to the size of the alphabet(26)");
+                                return false;
+                            }
                         }
                     }
                 }
+                if(key1)
+                    affineKey_1.setBorder(new JTextField().getBorder());
+                if (isNotNumeric(affineKey_2.getText())) {
+                    affineKey_2.setBorder(new LineBorder(Color.red,1));
+                    error.setText("Shift must not be blank and must be numeric");
+                    key2 = false;
+                }
+                else if (Integer.parseInt(affineKey_2.getText()) <= 0) {
+                    affineKey_2.setBorder(new LineBorder(Color.red,1));
+                    error.setText("The value must be greater than 0");
+                    return false;
+                }
+                if (!(key1 && key2))
+                    return false;
+                affineKey_2.setBorder(new JTextField().getBorder());
                 break;
-            }
+        }
+        error.setText("");
         return true;
     }
 
-    private boolean isNumeric(String string){
+    private boolean isNotNumeric(String string){
         if (string.isEmpty())
-                return false;
+                return true;
         for (int i = 0; i < string.length(); i++){
             if(i == 0 && string.charAt(i) == '-')
                 if(string.length() == 1)
-                    return false;
+                    return true;
                 else continue;
-            if(Character.digit(string.charAt(i), 10) < 0) return false;
+            if(Character.digit(string.charAt(i), 10) < 0) return true;
         }
-        return true;
+        return false;
     }
 
     private boolean isAlpha(String string){
@@ -521,67 +622,9 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
     public void itemStateChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             if (e.getSource() == cipher) {
-                shiftOrKey_1.getDocument().removeDocumentListener(this);
-                shiftOrKey_2.getDocument().removeDocumentListener(this);
-                switch (cipher.getSelectedIndex()) {
-                    case 0:
-                        shiftOrKey_1.setText("1");
-                        shiftOrkey1Label.setText("Shift");
-                        shiftOrKey_1.setPreferredSize(new Dimension(40, 26));
-                        shiftOrKey_1.setVisible(true);
-                        shiftOrKey_2.setVisible(false);
-                        shiftOrkey1Label.setVisible(true);
-                        rigid.setVisible(false);
-                        shiftOrkey2Label.setVisible(false);
-                        add1.setVisible(true);
-                        sub1.setVisible(true);
-                        add2.setVisible(false);
-                        sub2.setVisible(false);
-                        break;
-                    case 1:
-                        shiftOrKey_1.setText("Encrypt");
-                        shiftOrkey1Label.setText("Key");
-                        shiftOrKey_1.setPreferredSize(new Dimension(100, 26));
-                        shiftOrKey_1.setVisible(true);
-                        shiftOrKey_2.setVisible(false);
-                        shiftOrkey1Label.setVisible(true);
-                        rigid.setVisible(false);
-                        shiftOrkey2Label.setVisible(false);
-                        add1.setVisible(false);
-                        sub1.setVisible(false);
-                        add2.setVisible(false);
-                        sub2.setVisible(false);
-                        optionPanel2.revalidate();
-                        break;
-                    case 2:
-                        shiftOrKey_1.setVisible(false);
-                        shiftOrKey_2.setVisible(false);
-                        shiftOrkey1Label.setVisible(false);
-                        rigid.setVisible(false);
-                        shiftOrkey2Label.setVisible(false);
-                        add1.setVisible(false);
-                        sub1.setVisible(false);
-                        add2.setVisible(false);
-                        sub2.setVisible(false);
-                        break;
-                    case 3:
-                        shiftOrKey_1.setText("1");
-                        shiftOrKey_2.setText("1");
-                        shiftOrkey1Label.setText("Key 1");
-                        shiftOrKey_1.setPreferredSize(new Dimension(40, 26));
-                        shiftOrKey_1.setVisible(true);
-                        shiftOrKey_2.setVisible(true);
-                        shiftOrkey1Label.setVisible(true);
-                        rigid.setVisible(true);
-                        shiftOrkey2Label.setVisible(true);
-                        add1.setVisible(true);
-                        sub1.setVisible(true);
-                        add2.setVisible(true);
-                        sub2.setVisible(true);
-                        break;
-                }
-                shiftOrKey_1.getDocument().addDocumentListener(this);
-                shiftOrKey_2.getDocument().addDocumentListener(this);
+                CardLayout cl = (CardLayout)(optionCards.getLayout());
+                cl.show(optionCards, (String)e.getItem());
+
                 cipherDecipher();
             } else if (e.getSource() == encodeDecode) {
                 if (encodeDecode.getSelectedIndex() == 0) {
@@ -599,28 +642,34 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
 
     @Override
     public void mouseEntered(MouseEvent e) {
-
-            if (e.getSource() == add1)
-                add1.setIcon(new ImageIcon(getClass().getResource("/images/addHover.JPG")));
-            else if(e.getSource() == add2)
-                add2.setIcon(new ImageIcon(getClass().getResource("/images/addHover.JPG")));
-            else if(e.getSource() == sub1)
-                sub1.setIcon(new ImageIcon(getClass().getResource("/images/subHover.JPG")));
-            else if(e.getSource() == sub2)
-                sub2.setIcon(new ImageIcon(getClass().getResource("/images/subHover.JPG")));
+            if (e.getSource() == caesarSub)
+                caesarSub.setIcon(new ImageIcon(getClass().getResource("/images/subHover.JPG")));
+            else if(e.getSource() == caesarAdd)
+                caesarAdd.setIcon(new ImageIcon(getClass().getResource("/images/addHover.JPG")));
+            else if(e.getSource() == affineSub1)
+                affineSub1.setIcon(new ImageIcon(getClass().getResource("/images/subHover.JPG")));
+            else if(e.getSource() == affineAdd1)
+                affineAdd1.setIcon(new ImageIcon(getClass().getResource("/images/addHover.JPG")));
+            else if(e.getSource() == affineSub2)
+                affineSub2.setIcon(new ImageIcon(getClass().getResource("/images/subHover.JPG")));
+            else if(e.getSource() == affineAdd2)
+                affineAdd2.setIcon(new ImageIcon(getClass().getResource("/images/addHover.JPG")));
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        if (e.getSource() == add1)
-            add1.setIcon(new ImageIcon(getClass().getResource("/images/add.JPG")));
-        else if(e.getSource() == add2)
-            add2.setIcon(new ImageIcon(getClass().getResource("/images/add.JPG")));
-        else if(e.getSource() == sub1)
-            sub1.setIcon(new ImageIcon(getClass().getResource("/images/sub.JPG")));
-        else if(e.getSource() == sub2)
-            sub2.setIcon(new ImageIcon(getClass().getResource("/images/sub.JPG")));
-
+        if (e.getSource() == caesarSub)
+            caesarSub.setIcon(new ImageIcon(getClass().getResource("/images/sub.JPG")));
+        else if(e.getSource() == caesarAdd)
+            caesarAdd.setIcon(new ImageIcon(getClass().getResource("/images/add.JPG")));
+        else if(e.getSource() == affineSub1)
+            affineSub1.setIcon(new ImageIcon(getClass().getResource("/images/sub.JPG")));
+        else if(e.getSource() == affineAdd1)
+            affineAdd1.setIcon(new ImageIcon(getClass().getResource("/images/add.JPG")));
+        else if(e.getSource() == affineSub2)
+            affineSub2.setIcon(new ImageIcon(getClass().getResource("/images/sub.JPG")));
+        else if(e.getSource() == affineAdd2)
+            affineAdd2.setIcon(new ImageIcon(getClass().getResource("/images/add.JPG")));
     }
 
     public static void main(String[] args) {
