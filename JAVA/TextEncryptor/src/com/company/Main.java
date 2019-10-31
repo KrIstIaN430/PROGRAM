@@ -21,6 +21,8 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
     private JButton affineAdd1 = new JButton();
     private JButton affineSub2 = new JButton();
     private JButton affineAdd2 = new JButton();
+    private JLabel plainText = new JLabel("PLAINTEXT");
+    private JLabel cipherText = new JLabel("CIPHERTEXT");
     private String letters;
     private JLabel error = new JLabel();
     private JComboBox<String> cipher;
@@ -175,8 +177,6 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
             JPanel textPanel = new JPanel();
             textPanel.add(error);
 
-            JLabel plainText = new JLabel("PLAINTEXT");
-            JLabel cipherText = new JLabel("CIPHERTEXT");
             plainText.setAlignmentX(JComponent.CENTER_ALIGNMENT);
             cipherText.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
@@ -257,35 +257,29 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
             String text = "";
             switch (cipher.getSelectedIndex()) {
                 case 0:
-                    text = caesarCipher(encodeDecode.getSelectedIndex());
+                    text = caesarCipher();
                     break;
                 case 1:
-                    text = vigenereCipher(encodeDecode.getSelectedIndex());
+                    text = vigenereCipher();
                     break;
                 case 2:
-                    text = atbashCipher(encodeDecode.getSelectedIndex());
+                    text = atbashCipher();
                     break;
                 case 3:
-                    text = affineCipher(encodeDecode.getSelectedIndex());
+                    text = affineCipher();
                     break;
             }
-            if (encodeDecode.getSelectedIndex() == 0)
-                outField.setText(text);
-            else
-                inField.setText(text);
+            outField.setText(text);
         }
     }
-    private String caesarCipher(int encodeDecode){
+    private String caesarCipher(){
         StringBuilder text;
-        String[] textField = new String[2];
-        textField[0] = inField.getText();
-        textField[1] = outField.getText();
         int cShift = Integer.parseInt(caesarShift.getText());
-        text = new StringBuilder(textField[encodeDecode]);
-        for (int i = 0; i < textField[encodeDecode].length(); i++) {
+        text = new StringBuilder(inField.getText());
+        for (int i = 0; i < inField.getText().length(); i++) {
             int val = text.charAt(i);
             if(isAlpha(Character.toString(text.charAt(i)))) {
-                if (encodeDecode == 0)
+                if (encodeDecode.getSelectedIndex() == 0)
                     val = text.charAt(i) + cShift;
                 else
                     val = text.charAt(i) - cShift;
@@ -306,32 +300,29 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
         return text.toString();
 
     }
-    private String vigenereCipher(int encodeDecode){
+    private String vigenereCipher(){
         StringBuilder text = new StringBuilder();
         int x = 0;
-        String[] textField = new String[2];
-        textField[0] = inField.getText();
-        textField[1] = outField.getText();
-        for(int i = 0; i < textField[encodeDecode].length(); i++){
-            if(isAlpha(Character.toString(textField[encodeDecode].charAt(i)))) {
+        for(int i = 0; i < inField.getText().length(); i++){
+            if(isAlpha(Character.toString(inField.getText().charAt(i)))) {
                 text.append(vignereKey.getText().charAt(x));
                 x++;
                 if (x == vignereKey.getText().length())
                     x = 0;
             }
             else
-                text.append(textField[encodeDecode].charAt(i));
+                text.append(inField.getText().charAt(i));
         }
-        for(int i = 0; i < textField[encodeDecode].length(); i++) {
+        for(int i = 0; i < inField.getText().length(); i++) {
             int index, index2;
             index = letters.indexOf(text.charAt(i));
             if (index == -1)
                 continue;
             else if(index >= 26)
                 index -= 26;
-            index2 = letters.indexOf(textField[encodeDecode].charAt(i));
+            index2 = letters.indexOf(inField.getText().charAt(i));
             if (index2 != -1){
-                if (encodeDecode == 0) {
+                if (encodeDecode.getSelectedIndex() == 0) {
                     index = index2 + index;
                     while (index > 25)
                         index -= 26;
@@ -349,40 +340,34 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
         }
         return text.toString();
     }
-    private String atbashCipher(int encodeDecode){
+    private String atbashCipher(){
         StringBuilder text = new StringBuilder();
         StringBuilder text2 = new StringBuilder(letters);
         text2.reverse();
-        String[] textField = new String[2];
-        textField[0] = inField.getText();
-        textField[1] = outField.getText();
 
-        for(int i = 0;i < textField[encodeDecode].length(); i++) {
+        for(int i = 0;i < inField.getText().length(); i++) {
             int index;
-            if (isAlpha(Character.toString(textField[encodeDecode].charAt(i)))) {
-                if (Character.isUpperCase(textField[encodeDecode].charAt(i))) {
-                    index = letters.indexOf(textField[encodeDecode].charAt(i)) - 26;
+            if (isAlpha(Character.toString(inField.getText().charAt(i)))) {
+                if (Character.isUpperCase(inField.getText().charAt(i))) {
+                    index = letters.indexOf(inField.getText().charAt(i)) - 26;
                     text.append(text2.charAt(index));
                 } else {
-                    index = letters.indexOf(textField[encodeDecode].charAt(i)) + 26;
+                    index = letters.indexOf(inField.getText().charAt(i)) + 26;
                     text.append(text2.charAt(index));
                 }
             }
             else
-                text.append(textField[encodeDecode].charAt(i));
+                text.append(inField.getText().charAt(i));
         }
         return text.toString();
     }
-    private String affineCipher(int encodeDecode){
+    private String affineCipher(){
         //ENCRYPT (Ax+B) % 26
         //DECRPYT c(x - B) mod 26
         // c =  (X * KEY)% 26 == 1
         StringBuilder text = new StringBuilder();
-        String[] textField = new String[2];
-        textField[0] = inField.getText();
-        textField[1] = outField.getText();
 
-        if (encodeDecode == 1){
+        if (encodeDecode.getSelectedIndex() == 1){
             int inverse = 0;
             for(int i = 0; i < 26; i++){
                 inverse = (i * Integer.parseInt(affineKey_1.getText())) % 26;
@@ -391,11 +376,11 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
                     break;
                 }
             }
-            for(int i = 0; i < textField[encodeDecode].length(); i++) {
-                int index = letters.indexOf(textField[encodeDecode].charAt(i));
+            for(int i = 0; i < inField.getText().length(); i++) {
+                int index = letters.indexOf(inField.getText().charAt(i));
                 int val = 0;
                 if (index == -1) {
-                    text.append(textField[encodeDecode].charAt(i));
+                    text.append(inField.getText().charAt(i));
                     continue;
                 }
                 if(index <= 25){
@@ -414,10 +399,10 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
             }
             return text.toString();
         }
-        for(int i = 0;i < textField[encodeDecode].length(); i++) {
-            int index = letters.indexOf(textField[encodeDecode].charAt(i));
+        for(int i = 0;i < inField.getText().length(); i++) {
+            int index = letters.indexOf(inField.getText().charAt(i));
             if (index == -1) {
-                text.append(textField[encodeDecode].charAt(i));
+                text.append(inField.getText().charAt(i));
                 continue;
             }
             int val = 0;
@@ -601,20 +586,17 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        System.out.println("insert");
         cipherDecipher();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        System.out.println("remove");
         cipherDecipher();
 
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        System.out.println("changed");
         cipherDecipher();
     }
 
@@ -627,15 +609,20 @@ public class Main extends MouseAdapter implements DocumentListener, ActionListen
 
                 cipherDecipher();
             } else if (e.getSource() == encodeDecode) {
+                
+                inField.getDocument().removeDocumentListener(this);
+                inField.setText(outField.getText());
+                
                 if (encodeDecode.getSelectedIndex() == 0) {
-                    outField.getDocument().removeDocumentListener(this);
-                    inField.getDocument().addDocumentListener(this);
+                    plainText.setText("PLAINTEXT");
+                    cipherText.setText("CIPHERTEXT");
                 }
                 else if (encodeDecode.getSelectedIndex() == 1) {
-                    inField.getDocument().removeDocumentListener(this);
-                    outField.getDocument().addDocumentListener(this);
+                    plainText.setText("CIPHERTEXT");
+                    cipherText.setText("PLAINTEXT");
                 }
                 cipherDecipher();
+                inField.getDocument().addDocumentListener(this);
             }
         }
     }
