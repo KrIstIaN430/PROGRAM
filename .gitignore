@@ -1,0 +1,8 @@
+# Build files
+JAVA/Calculator/src/images/history.pdn
+JAVA/Calculator/src/images/standardLogo.psd
+production
+
+# Testing file
+testing.java
+test.java
