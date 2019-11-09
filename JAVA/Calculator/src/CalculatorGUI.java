@@ -5,25 +5,30 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 class CalculatorGUI extends MouseAdapter implements ActionListener {
     private JPanel calculatorCards;
     private JButton standardPanButton = new JButton();
     private JButton tempButton = new JButton();
-    private JLabel inputOutput = new JLabel("0");
+    private JLabel inputOutput = new JLabel("0"); // TODO CHANGE TO TEXTFIELD
     private JLabel equation = new JLabel(" "); //TODO REMOVE " " AFTER CHANGING SCREENPANEL LAYOUT
     private JLabel tempOutput = new JLabel(" ");
     private Calculator calc = new Calculator();
+    private JFrame historyWindow = new JFrame("History");
     private JButton historyButton = new JButton();
-
+    private JPanel historyButtonsPanel = new JPanel();
     private boolean overwrite = true;
     private boolean opFlag = false;
     private boolean dotFlag = false;
     private boolean disabled = false;
     private String prevOp = "";
+
     private CalculatorGUI() throws IOException {
         JFrame frame = new JFrame("Calculator");
         frame.setLayout(new GridBagLayout());
+        JScrollPane historyPane = new JScrollPane(historyButtonsPanel);
         JPanel calculatorButtons = new JPanel();
         JPanel standardPanel = new JPanel(new BorderLayout());
         JPanel standardTop = new JPanel();
@@ -31,7 +36,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         JPanel historyPanel = new JPanel(new BorderLayout());
         JPanel screenPanel = new JPanel(new GridBagLayout());
         JPanel standCalcButtons = new JPanel(new GridLayout(5, 4));
-        String[] standardPlaceholder = {"CLR Hist", "C", "DEL", "/", "7", "8", "9", "*", "4", "5", "6", "-",
+        String[] standardButtonName = {"CLR Hist", "C", "DEL", "/", "7", "8", "9", "*", "4", "5", "6", "-",
                 "1", "2", "3", "+", "+/-", "0", ".", "="};
         JButton[] standardButtons = new JButton[20];
         //TODO ARRANGE DECLARATIONS
@@ -54,6 +59,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         tempButton.setPreferredSize(new Dimension(70, 70));
 
         historyButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        historyButton.addActionListener(this);
         historyButton.addMouseListener(this);
         historyButton.setBorder(null);
         historyButton.setIcon(new ImageIcon(getClass().getResource("/images/history.PNG")));
@@ -84,6 +90,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         historyPanel.add(historyButton, BorderLayout.LINE_END);
         historyPanel.setPreferredSize(new Dimension(40, 40));
 
+        historyButtonsPanel.setLayout(new BoxLayout(historyButtonsPanel, BoxLayout.PAGE_AXIS));
         //standardTop.setMaximumSize(new Dimension(360, 200));
 
 
@@ -196,8 +203,8 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
 
         //TODO MOVE SOMEWHERE
         for (int i = 0; i < 20; i++) {
-            standardButtons[i] = new JButton(standardPlaceholder[i]);
-            standardButtons[i].setName(standardPlaceholder[i]);
+            standardButtons[i] = new JButton(standardButtonName[i]);
+            standardButtons[i].setName(standardButtonName[i]);
             standardButtons[i].addActionListener( this);
             standCalcButtons.add(standardButtons[i]);
         }
@@ -229,6 +236,9 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         standardPanel.setBackground(Color.decode("#2D2D2D"));
 
 
+        historyWindow.add(historyPane);
+        historyWindow.setMinimumSize(new Dimension(400, 500));
+        historyWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         frame.setMinimumSize(new Dimension(400, 500));
         frame.setVisible(true);
@@ -236,9 +246,6 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
     }
 
 
-    public static void main(String[] args) throws IOException {
-        new CalculatorGUI();
-    }
 
     public void mouseEntered(MouseEvent e) {
         if (e.getSource() == standardPanButton)
@@ -283,6 +290,12 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         } else if (e.getSource() == tempButton) {
             CardLayout c1 = (CardLayout) calculatorCards.getLayout();
             c1.show(calculatorCards, "Temperature");
+        }
+        else if(e.getSource() == historyButton){
+            if (!historyWindow.isVisible())
+                historyWindow.setVisible(true);
+            else
+                historyWindow.setVisible(false);
         }
         else{
             Component visible = new JPanel();
@@ -364,8 +377,18 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                         inputOutput.setText("Cannot divide by 0");
                         disabled = true;
                     }
-                    else
-                        inputOutput.setText(calc.formatter(calc.calculate(toComp)));
+                    else if(!tempOutput.getText().equals(" ")) //TODO FIX ZERO TEMPOUTPUT BUG BY REPLACING SCREEN LAYOUT
+                        inputOutput.setText(tempOutput.getText());
+
+                    //TODO replace with method call
+                    calc.equations.addFirst(toComp.toString() + " =");
+                    calc.results.addFirst(inputOutput.getText());
+                    if(calc.results.size() > 20) {
+                        calc.equations.removeLast();
+                        calc.results.removeLast();
+                    }
+                    updateHistory();
+
                     equation.setText(" ");
                     tempOutput.setText(" ");
                     overwrite = true;
@@ -376,11 +399,14 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     input.append(0);
                     toComp.setLength(0);
                     equation.setText(" ");
+                    dotFlag = false;
                     overwrite = true;
                     prevOp = "";
                     break;
                 case "DEL":
                     if(!overwrite) {
+                        if(input.charAt(input.length() - 1) == '.')
+                            dotFlag = false;
                         input.setLength(input.length() - 1);
                         if (input.length() == 0)
                             input.append(0);
@@ -394,19 +420,59 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     input.setLength(0);
                     input.append(negated);
                     inputOutput.setText(negated);
+                    if(toComp.length() == 1)
+                        return;
+                    break;
+                case "CLR Hist":
+                    calc.equations.clear();
+                    calc.results.clear();
+                    updateHistory();
                     break;
             }
         }
+        if(toComp.length() != 1) {
+            toComp.append(input.toString());
+            String outputString = calc.calculate(toComp);
+            if (dotFlag)
+                inputOutput.setText(input.toString());
+            else
+                inputOutput.setText(calc.formatter(input.toString()));
+            if (!outputString.equals("") && !outputString.equals("0")) //TODO REMOVE AFTER CHANGING LAYOUT
+                tempOutput.setText(outputString);
+            else
+                tempOutput.setText(" ");
+        }
+    }
 
-        toComp.append(input.toString());
-        String outputString = calc.calculate(toComp);
-        if (dotFlag)
-            inputOutput.setText(input.toString());
-        else
-            inputOutput.setText(calc.formatter(input.toString()));
-        if (!outputString.equals("") && !outputString.equals("0"))
-            tempOutput.setText(outputString);
-        else
-            tempOutput.setText(" ");
+    private void updateHistory(){
+        historyButtonsPanel.removeAll();
+        historyCustomButton[] history = new historyCustomButton[calc.results.size()];
+        int ctr = 0;
+        while(ctr < calc.results.size()){
+            history[ctr] = new historyCustomButton(calc.equations.get(ctr), calc.results.get(ctr));
+            historyButtonsPanel.add(history[ctr]);
+            history[ctr].addActionListener(this);
+            history[ctr].setBorder(null);
+            history[ctr].setName(Integer.toString(ctr));
+            ctr++;
+        }
+
+        /*
+        for (int i = 0; i < calc.results.size(); i++) {
+            history[i] = new historyCustomButton();
+            historyButtonsPanel.add(history[i]);
+            history[i].addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                }
+            });
+        }
+
+         */
+        historyWindow.revalidate();
+    }
+    public static void main(String[] args) throws IOException {
+        new CalculatorGUI();
     }
 }

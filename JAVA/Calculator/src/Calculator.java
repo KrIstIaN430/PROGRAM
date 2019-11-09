@@ -8,7 +8,8 @@ import java.util.*;
 import java.math.BigDecimal;
 
 class Calculator {
-
+    LinkedList<String> equations = new LinkedList<>();
+    LinkedList<String> results = new LinkedList<>();
     private DecimalFormat df = new DecimalFormat("#,###.#");
     Calculator(){
 
@@ -49,12 +50,11 @@ class Calculator {
             //}
             //else
                 //output.append(numbers.pop());
-            //TODO IMPROVE FORMAT
-            try{
-                return formatter(df.parse(numbers.pop().toString()).toString());
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            //TODO IMPROVE FORMATTING
+            //TODO IMPROVE ACCURACY - USE CLASS VARIABLE
+            return formatter(new BigDecimal(numbers.pop().toString())
+                    .stripTrailingZeros()
+                    .toPlainString());
         }
         return "";
     }
@@ -90,25 +90,17 @@ class Calculator {
         return numCount > opCount;
     }
     String formatter(String input) {
+        BigDecimal in = new BigDecimal(input.replaceAll(",", ""));
         if (input.length() > 20)
             df.applyPattern("0.000E0");
         else
             df.applyPattern("#,###.###############");
-        try {
-            return df.format(df.parse(input));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return "";
+
+            return df.format(in);
     }
     String negate(StringBuilder input){
-        try {
-            df.applyPattern("-#,###.##;#,##0.#");
-            Number parsed = df.parse(input.toString());
-            return parsed.toString();
-        } catch (ParseException e) {
-            System.out.println(e);
-        }
-        return "";
+        BigDecimal in = new BigDecimal(input.toString().replaceAll(",", ""));
+        return formatter(in.negate().toString());
+
     }
 }
