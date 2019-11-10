@@ -8,55 +8,46 @@ import java.util.*;
 import java.math.BigDecimal;
 
 class Calculator {
-    LinkedList<String> equations = new LinkedList<>();
-    LinkedList<String> results = new LinkedList<>();
-    private DecimalFormat df = new DecimalFormat("#,###.#");
+    private LinkedList<String> equations = new LinkedList<>();
+    private LinkedList<String> results = new LinkedList<>();
+    private LinkedList<String> currEquation = new LinkedList<>();
+    private BigDecimal prevAnswer = new BigDecimal(0);
+    private Iterator iterCurr;
+    private DecimalFormat df = new DecimalFormat();
     Calculator(){
 
-        df.setMaximumFractionDigits(15);
-        df.setMinimumFractionDigits(-10);
     }
-
-    String calculate(StringBuilder input){
+    String calculate(String input, boolean same) {
         Stack<BigDecimal> numbers = new Stack<>();
         Stack<String> operators = new Stack<>();
-        for (int i = 0; i < input.length(); i++) {
-            if (input.charAt(i) == ',')
-                input.deleteCharAt(i);
-        }
-        List<String> organized = new ArrayList<>(Arrays.asList(input.toString().split(" ")));
-
-        if (validate(organized)) {
-            for (Object x : organized) {
-                if (x.equals("*") || x.equals("/") || x.equals("+") || x.equals("-"))
-                    if (operators.empty())
-                        operators.push(x.toString());
-                    else {
-                        if (!hasPrecedence(operators.peek(), x.toString())) {
-                            numbers.push(applyOp(numbers.pop(), numbers.pop(), operators.pop()));
-                            operators.push(x.toString());
-                        } else
-                            operators.push(x.toString());
-                    }
-                else if (!x.equals("")) {
-                    numbers.push(new BigDecimal(x.toString()));
+        if(same)
+            addToEquation(false, prevAnswer.toPlainString());
+        else
+            addToEquation(false, input);
+        iterCurr = currEquation.iterator();
+        while (iterCurr.hasNext()) {
+            String x = (String) iterCurr.next();
+            if (x.equals("*") || x.equals("/") || x.equals("+") || x.equals("-"))
+                if (operators.empty())
+                    operators.push(x);
+                else {
+                    if (!hasPrecedence(operators.peek(), x)) {
+                        numbers.push(applyOp(numbers.pop(), numbers.pop(), operators.pop()));
+                        operators.push(x);
+                    } else
+                        operators.push(x);
                 }
+            else if (!x.equals("")) {
+                numbers.push(new BigDecimal(x));
             }
-            while (!operators.empty())
-                numbers.push(applyOp(numbers.pop(), numbers.pop(), operators.pop()));
-
-            //if (numbers.peek() % 1 == 0) {
-            //    output.append((int)Math.round(numbers.pop()));
-            //}
-            //else
-                //output.append(numbers.pop());
-            //TODO IMPROVE FORMATTING
-            //TODO IMPROVE ACCURACY - USE CLASS VARIABLE
-            return formatter(new BigDecimal(numbers.pop().toString())
-                    .stripTrailingZeros()
-                    .toPlainString());
         }
-        return "";
+        while (!operators.empty())
+            numbers.push(applyOp(numbers.pop(), numbers.pop(), operators.pop()));
+        currEquation.removeLast();
+        prevAnswer = new BigDecimal(numbers.pop().toString())
+                .stripTrailingZeros();
+        return formatter(new BigDecimal(prevAnswer.toString())
+                .toPlainString());
     }
 
     private BigDecimal applyOp(BigDecimal secondNum, BigDecimal firstNum, String operator){
@@ -78,28 +69,79 @@ class Calculator {
         return ((stackOp.equals("+") || stackOp.equals("-")) && (listOp.equals("*") || listOp.equals("/")));
     }
 
-    private boolean validate(List input){
-        int numCount = 0;
-        int opCount = 0;
-        for (Object x : input) {
-            if (x.equals("*") || x.equals("/") || x.equals("+") || x.equals("-"))
-                opCount++;
-            else
-                numCount++;
-        }
-        return numCount > opCount;
+    String getLast(){
+        return currEquation.getLast();
     }
+    void addToEquation(boolean op, String name){
+        if (op)
+            currEquation.removeLast();
+        currEquation.addLast(name.replaceAll(",", ""));
+    }
+
+    LinkedList getEquations(){
+        return equations;
+    }
+    LinkedList getResults(){
+        return  results;
+    }
+    void clearEqRes(){
+        equations.clear();
+        results.clear();
+    }
+    String getPrevAnswer(){
+        return prevAnswer.toPlainString();
+    }
+
+    void clearEquation(){
+        currEquation.clear();
+    }
+
+    String getCurrEquation(){
+        StringBuilder current = new StringBuilder();
+        iterCurr = currEquation.iterator();
+        while(iterCurr.hasNext()){
+            String x = (String) iterCurr.next();
+            if (isOperator(x))
+                current.append(x);
+            else
+                current.append(formatter(x));
+            current.append(" ");
+        }
+        return current.toString();
+    }
+
+    void addToHistory(String input, boolean same){
+        results.addFirst(formatter(prevAnswer.toPlainString()));
+        addToEquation(false, input);
+        equations.addFirst(getCurrEquation() + "=");
+        if(results.size() > 20) {
+            equations.removeLast();
+            results.removeLast();
+        }
+        clearEquation();
+    }
+
+    private boolean isOperator(String x){
+        return x.equals("*") || x.equals("/") || x.equals("+") || x.equals("-");
+    }
+
+
     String formatter(String input) {
         BigDecimal in = new BigDecimal(input.replaceAll(",", ""));
         if (input.length() > 20)
             df.applyPattern("0.000E0");
         else
             df.applyPattern("#,###.###############");
-
-            return df.format(in);
+        return df.format(in);
     }
-    String negate(StringBuilder input){
-        BigDecimal in = new BigDecimal(input.toString().replaceAll(",", ""));
+    String negate(StringBuilder input, boolean same){
+        BigDecimal in;
+        if(same) {
+            prevAnswer = prevAnswer.negate();
+            return formatter(prevAnswer.toString());
+        }
+        else
+            in = new BigDecimal(input.toString().replaceAll(",", ""));
         return formatter(in.negate().toString());
 
     }

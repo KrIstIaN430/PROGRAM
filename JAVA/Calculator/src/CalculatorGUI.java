@@ -314,7 +314,6 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
     }
     private void screenUpdate(String name){
         StringBuilder input = new StringBuilder(inputOutput.getText());
-        StringBuilder toComp = new StringBuilder(equation.getText());
         if (Character.digit(name.charAt(0), 10) >= 0) {
             if ((input.length() == 1 && input.toString().equals("0")) || overwrite) {
                 input.setLength(0);
@@ -324,12 +323,10 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
             input.append(name);
             if (input.length() > 14)
                 input.setLength(input.length() - 1);
-            inputOutput.setText(input.toString());
-            if (prevOp.equals("/") && inputOutput.getText().equals("0")) {
-                tempOutput.setText("Cannot divide by 0");
-                disabled = true;
-                return;
-            }
+            if(dotFlag)
+                inputOutput.setText(input.toString());
+            else
+                inputOutput.setText(calc.formatter(input.toString()));
             opFlag = false;
         } else {
             switch (name) {
@@ -337,28 +334,13 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                 case "/":
                 case "+":
                 case "-":
-                    if (equation.getText().length() > 2 && opFlag) {
-                        toComp.setLength(toComp.length() - 3);
-                        switch (name) {
-                            case "*":
-                                toComp.append(" * ");
-                                break;
-                            case "/":
-                                toComp.append(" / ");
-                                break;
-                            case "+":
-                                toComp.append(" + ");
-                                break;
-                            default:
-                                toComp.append(" - ");
-                                break;
-                        }
-                    } else if(input.length() != 1 || Integer.parseInt(input.toString()) != 0) {
-                        toComp.append(input.toString()).append(" ").append(name).append(" ");
-                    }
-                    else
-                        return;
-                    equation.setText(toComp.toString());
+                    if(!opFlag)
+                        if(overwrite)
+                            calc.addToEquation(false, calc.getPrevAnswer());
+                        else
+                            calc.addToEquation(false, input.toString());
+                    calc.addToEquation(opFlag, name);
+                    equation.setText(calc.getCurrEquation());
                     opFlag = true;
                     overwrite = true;
                     prevOp = name;
@@ -372,37 +354,31 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     overwrite = false;
                     return;
                 case "=":
-                    toComp = new StringBuilder(equation.getText() + input);
-                    if(prevOp.equals("/") && inputOutput.getText().equals("0")) {
-                        inputOutput.setText("Cannot divide by 0");
-                        disabled = true;
-                    }
-                    else if(!tempOutput.getText().equals(" ")) //TODO FIX ZERO TEMPOUTPUT BUG BY REPLACING SCREEN LAYOUT
-                        inputOutput.setText(tempOutput.getText());
+                    if (!calc.getCurrEquation().isEmpty())
+                        if(calc.getLast().equals("/") && inputOutput.getText().equals("0")) {
+                            inputOutput.setText("Cannot divide by 0");
+                            disabled = true;
+                        }
+                        else if(!tempOutput.getText().equals(" ")) //TODO FIX ZERO TEMPOUTPUT BUG BY REPLACING SCREEN LAYOUT
+                            inputOutput.setText(tempOutput.getText());
 
-                    //TODO replace with method call
-                    calc.equations.addFirst(toComp.toString() + " =");
-                    calc.results.addFirst(inputOutput.getText());
-                    if(calc.results.size() > 20) {
-                        calc.equations.removeLast();
-                        calc.results.removeLast();
-                    }
+                    calc.addToHistory(input.toString(), overwrite);
                     updateHistory();
-
                     equation.setText(" ");
                     tempOutput.setText(" ");
                     overwrite = true;
                     prevOp = "";
+                    opFlag = false;
                     return;
                 case "C":
-                    input.setLength(0);
-                    input.append(0);
-                    toComp.setLength(0);
+                    calc.clearEquation();
+                    inputOutput.setText("0");
+                    tempOutput.setText(" ");
                     equation.setText(" ");
                     dotFlag = false;
                     overwrite = true;
                     prevOp = "";
-                    break;
+                    return;
                 case "DEL":
                     if(!overwrite) {
                         if(input.charAt(input.length() - 1) == '.')
@@ -410,66 +386,52 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                         input.setLength(input.length() - 1);
                         if (input.length() == 0)
                             input.append(0);
-                        inputOutput.setText(input.toString());
+                        inputOutput.setText(calc.formatter(input.toString()));
+                        if(input.toString().equals("0")) {
+                            tempOutput.setText(" ");
+                            return;
+                        }
+                        break;
                     }
-                    break;
+                    return;
                 case "+/-":
                     if (inputOutput.getText().equals("0"))
                         return;
-                    String negated = calc.negate(input);
+                    String negated = calc.negate(input, overwrite);
                     input.setLength(0);
                     input.append(negated);
                     inputOutput.setText(negated);
-                    if(toComp.length() == 1)
+                    if(calc.getCurrEquation().length() == 0) {
+                        tempOutput.setText(" ");
                         return;
+                    }
                     break;
                 case "CLR Hist":
-                    calc.equations.clear();
-                    calc.results.clear();
+                    calc.clearEqRes();
                     updateHistory();
-                    break;
+                    return;
             }
         }
-        if(toComp.length() != 1) {
-            toComp.append(input.toString());
-            String outputString = calc.calculate(toComp);
-            if (dotFlag)
-                inputOutput.setText(input.toString());
-            else
-                inputOutput.setText(calc.formatter(input.toString()));
-            if (!outputString.equals("") && !outputString.equals("0")) //TODO REMOVE AFTER CHANGING LAYOUT
-                tempOutput.setText(outputString);
-            else
-                tempOutput.setText(" ");
+        if(prevOp.equals("/") && inputOutput.getText().equals("0")) {
+            tempOutput.setText("Cannot divide by 0");
         }
+        else
+            tempOutput.setText(calc.calculate(input.toString(), overwrite));
     }
 
     private void updateHistory(){
         historyButtonsPanel.removeAll();
-        historyCustomButton[] history = new historyCustomButton[calc.results.size()];
+        historyCustomButton[] history = new historyCustomButton[calc.getResults().size()];
         int ctr = 0;
-        while(ctr < calc.results.size()){
-            history[ctr] = new historyCustomButton(calc.equations.get(ctr), calc.results.get(ctr));
+        while(ctr < calc.getResults().size()){
+            history[ctr] = new historyCustomButton(calc.getEquations().get(ctr).toString(),
+                                                    calc.getResults().get(ctr).toString());
             historyButtonsPanel.add(history[ctr]);
             history[ctr].addActionListener(this);
             history[ctr].setBorder(null);
             history[ctr].setName(Integer.toString(ctr));
             ctr++;
         }
-
-        /*
-        for (int i = 0; i < calc.results.size(); i++) {
-            history[i] = new historyCustomButton();
-            historyButtonsPanel.add(history[i]);
-            history[i].addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-
-                }
-            });
-        }
-
-         */
         historyWindow.revalidate();
     }
     public static void main(String[] args) throws IOException {
