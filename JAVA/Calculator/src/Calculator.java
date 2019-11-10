@@ -78,10 +78,10 @@ class Calculator {
         currEquation.addLast(name.replaceAll(",", ""));
     }
 
-    LinkedList getEquations(){
+    LinkedList<String> getEquations(){
         return equations;
     }
-    LinkedList getResults(){
+    LinkedList<String> getResults(){
         return  results;
     }
     void clearEqRes(){
@@ -94,6 +94,11 @@ class Calculator {
 
     void clearEquation(){
         currEquation.clear();
+    }
+
+    void setCurrEquation(String currEquation){
+        for(String x: currEquation.split(" "))
+            addToEquation(false, x);
     }
 
     String getCurrEquation(){
@@ -113,7 +118,7 @@ class Calculator {
     void addToHistory(String input, boolean same){
         results.addFirst(formatter(prevAnswer.toPlainString()));
         addToEquation(false, input);
-        equations.addFirst(getCurrEquation() + "=");
+        equations.addFirst(getCurrEquation());
         if(results.size() > 20) {
             equations.removeLast();
             results.removeLast();

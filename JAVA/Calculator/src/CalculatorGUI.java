@@ -23,8 +23,8 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
     private boolean opFlag = false;
     private boolean dotFlag = false;
     private boolean disabled = false;
+    private boolean fromHistory = false;
     private String prevOp = "";
-
     private CalculatorGUI() throws IOException {
         JFrame frame = new JFrame("Calculator");
         frame.setLayout(new GridBagLayout());
@@ -308,7 +308,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     inputOutput.setText("0");
                     disabled = false;
                 }
-                screenUpdate(((JComponent) e.getSource()).getName());
+                screenUpdate(e.getActionCommand());
             }
         }
     }
@@ -334,17 +334,24 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                 case "/":
                 case "+":
                 case "-":
-                    if(!opFlag)
-                        if(overwrite)
+                    if(!opFlag) {
+                        if (overwrite)
                             calc.addToEquation(false, calc.getPrevAnswer());
                         else
                             calc.addToEquation(false, input.toString());
-                    calc.addToEquation(opFlag, name);
+                    }
+                    if (fromHistory) {
+                        calc.addToEquation(false, name);
+                        fromHistory = false;
+                    }
+                    else
+                        calc.addToEquation(opFlag, name);
                     equation.setText(calc.getCurrEquation());
+                    tempOutput.setText(calc.calculate(input.toString(), false));
                     opFlag = true;
                     overwrite = true;
                     prevOp = name;
-                    break;
+                    return;
                 case ".":
                     if (!dotFlag) {
                         input.append(".");
@@ -424,10 +431,18 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         historyCustomButton[] history = new historyCustomButton[calc.getResults().size()];
         int ctr = 0;
         while(ctr < calc.getResults().size()){
-            history[ctr] = new historyCustomButton(calc.getEquations().get(ctr).toString(),
-                                                    calc.getResults().get(ctr).toString());
+            history[ctr] = new historyCustomButton(calc.getEquations().get(ctr) + "=",
+                                                    calc.getResults().get(ctr));
             historyButtonsPanel.add(history[ctr]);
-            history[ctr].addActionListener(this);
+            history[ctr].addActionListener(e -> {
+                int x = Integer.parseInt(((JComponent) e.getSource()).getName());
+                opFlag = true;
+                overwrite = true;
+                fromHistory = true;
+                calc.setCurrEquation(calc.getEquations().get(x));
+                equation.setText(calc.getEquations().get(x));
+                inputOutput.setText(calc.getResults().get(x));
+            });
             history[ctr].setBorder(null);
             history[ctr].setName(Integer.toString(ctr));
             ctr++;
