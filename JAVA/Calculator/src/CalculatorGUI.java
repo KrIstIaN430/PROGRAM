@@ -13,8 +13,8 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
     private JButton standardPanButton = new JButton();
     private JButton tempButton = new JButton();
     private JLabel inputOutput = new JLabel("0"); // TODO CHANGE TO TEXTFIELD
-    private JLabel equation = new JLabel(" "); //TODO REMOVE " " AFTER CHANGING SCREENPANEL LAYOUT
-    private JLabel tempOutput = new JLabel(" ");
+    private JLabel equation = new JLabel();
+    private JLabel tempOutput = new JLabel();
     private Calculator calc = new Calculator();
     private JFrame historyWindow = new JFrame("History");
     private JButton historyButton = new JButton();
@@ -34,7 +34,8 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         JPanel standardTop = new JPanel();
         JPanel titleHistory = new JPanel(new BorderLayout());
         JPanel historyPanel = new JPanel(new BorderLayout());
-        JPanel screenPanel = new JPanel(new GridBagLayout());
+        JPanel screenPanel = new JPanel();
+        screenPanel.setLayout(new BoxLayout(screenPanel, BoxLayout.PAGE_AXIS));
         JPanel standCalcButtons = new JPanel(new GridLayout(5, 4));
         String[] standardButtonName = {"CLR Hist", "C", "DEL", "/", "7", "8", "9", "*", "4", "5", "6", "-",
                 "1", "2", "3", "+", "+/-", "0", ".", "="};
@@ -77,7 +78,6 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         calculatorButtons.add(standardPanButton);
         calculatorButtons.add(tempButton);
         //-----------STANDARD CALCULATOR PANEL
-        GridBagConstraints c = new GridBagConstraints();
 
         BufferedImage myPicture = ImageIO.read(getClass().getResource("/images/standardLogo.PNG"));
         JLabel standardLabel = new JLabel(new ImageIcon(myPicture));
@@ -102,15 +102,16 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         //standardLabel.setForeground(Color.WHITE);
         //standardLabel.setHorizontalAlignment(JLabel.CENTER);
         JButton placeholder1 = new JButton("PLACEHOLDER1"); //TODO DELETE
-        JButton placeholder2 = new JButton("PLACEHOLDER2"); //TODO DELETE
+        JButton placeholder2 = new JButton(); //TODO DELETE
+        JButton placeholder3 = new JButton("PLACEHOLDER3"); //TODO DELETE
         titleHistory.setBackground(Color.decode("#00ADEF"));
         titleHistory.add(standardLabel);
         titleHistory.add(historyPanel, BorderLayout.LINE_END);
         standardTop.add(titleHistory);
         standardTop.add(screenPanel);
+        standardTop.setBackground(Color.decode("#4F4F4F"));
         standardPanel.add(standardTop, BorderLayout.PAGE_START);
         standardPanel.add(standCalcButtons);
-        //TODO CHANGE SCREENPANEL LAYOUT TO BORDERLAYOUT
 
 
 
@@ -127,77 +128,21 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         tempPanel2.add(placeholder1);
         inputOutput.setFont(new Font("Cambria", Font.PLAIN,40));
         inputOutput.setMinimumSize(new Dimension(28, 45));
-        c.fill = GridBagConstraints.BOTH;
-        c.weighty = 0;
-        c.weightx = 0;
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        c.gridx = 2;
-        c.gridy = 0;
-        screenPanel.add(equation, c);
-        c.weighty = 1;
-        c.weightx = 1;
-        c.gridx = 0;
-        c.gridy = 1;
-        c.gridwidth = 3;
-        c.gridheight = 1;
-        screenPanel.add(inputOutput, c);
-        c.weighty = .25;
-        c.weightx = 0;
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        c.gridx = 2;
-        c.gridy = 2;
-        screenPanel.add(tempOutput, c);
 
-        /*
-        c = new GridBagConstraints();
-        //standardLabel.setBackground(Color.decode("#444444"));
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = 2;
-        c.weightx = 1;
-        c.weighty = 1;
-        standardPanel.add(standardLabelPanel, c);
-        c.fill = 0;
-        c.weightx = 0;
-        c.gridwidth = 1;
-        c.gridx = 2;
-        c.gridy = 0;
-        c.weighty = .5;
-        standardPanel.add(historyButton, c);
+        equation.setPreferredSize(new Dimension(13, 16));
+        JPanel displayTempPanel = new JPanel(new BorderLayout());
+        displayTempPanel.add(equation);
+        screenPanel.add(displayTempPanel);
 
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(10, 10, 0, 10);
-        c.ipady = 20;
-        c.weightx = 0;
-        c.gridwidth = 3;
-        c.gridx = 0;
-        c.gridy = 1;
-        c.weighty = 0;
-        standardPanel.add(screenPanel, c);
+        inputOutput.setPreferredSize(new Dimension(32, 47));
+        displayTempPanel = new JPanel(new BorderLayout());
+        displayTempPanel.add(inputOutput);
+        screenPanel.add(displayTempPanel);
 
-        JPanel standCalcButtons = new JPanel(new GridLayout(5, 4));
-
-
-        for (int i = 0; i < 20; i++) {
-            standardButtons[i] = new JButton(standardPlaceholder[i]);
-            standardButtons[i].setName(standardPlaceholder[i]);
-            standardButtons[i].addActionListener( this);
-            standCalcButtons.add(standardButtons[i]);
-        }
-
-
-        c.insets = new Insets(10, 10, 10, 10);
-        c.fill = GridBagConstraints.BOTH;
-        c.weighty = 1;
-        c.gridx = 0;
-        c.gridy = 2;
-        standardPanel.add(standCalcButtons, c);
-
-
-         */
+        tempOutput.setPreferredSize(new Dimension(13, 16));
+        displayTempPanel = new JPanel(new BorderLayout());
+        displayTempPanel.add(tempOutput);
+        screenPanel.add(displayTempPanel);
 
 
 
@@ -216,7 +161,8 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         calculatorCards.add(standardPanel, "Standard");
         calculatorCards.add(tempPanel, "Temperature");
 
-        c = new GridBagConstraints();
+
+        GridBagConstraints c = new GridBagConstraints();
         //--------------------MAIN FRAME
         c.fill = GridBagConstraints.BOTH;
         c.weighty = 0;
@@ -347,7 +293,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     else
                         calc.addToEquation(opFlag, name);
                     equation.setText(calc.getCurrEquation());
-                    tempOutput.setText(calc.calculate(input.toString(), false));
+                    tempOutput.setText(calc.calculate(input.toString(), overwrite));
                     opFlag = true;
                     overwrite = true;
                     prevOp = name;
@@ -366,13 +312,13 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                             inputOutput.setText("Cannot divide by 0");
                             disabled = true;
                         }
-                        else if(!tempOutput.getText().equals(" ")) //TODO FIX ZERO TEMPOUTPUT BUG BY REPLACING SCREEN LAYOUT
+                        else if(!tempOutput.getText().isEmpty())
                             inputOutput.setText(tempOutput.getText());
 
                     calc.addToHistory(input.toString(), overwrite);
                     updateHistory();
-                    equation.setText(" ");
-                    tempOutput.setText(" ");
+                    equation.setText("");
+                    tempOutput.setText("");
                     overwrite = true;
                     prevOp = "";
                     opFlag = false;
@@ -380,8 +326,8 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                 case "C":
                     calc.clearEquation();
                     inputOutput.setText("0");
-                    tempOutput.setText(" ");
-                    equation.setText(" ");
+                    tempOutput.setText("");
+                    equation.setText("");
                     dotFlag = false;
                     overwrite = true;
                     prevOp = "";
@@ -395,7 +341,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                             input.append(0);
                         inputOutput.setText(calc.formatter(input.toString()));
                         if(input.toString().equals("0")) {
-                            tempOutput.setText(" ");
+                            tempOutput.setText("");
                             return;
                         }
                         break;
@@ -409,7 +355,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     input.append(negated);
                     inputOutput.setText(negated);
                     if(calc.getCurrEquation().length() == 0) {
-                        tempOutput.setText(" ");
+                        tempOutput.setText("");
                         return;
                     }
                     break;

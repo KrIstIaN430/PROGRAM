@@ -46,8 +46,7 @@ class Calculator {
         currEquation.removeLast();
         prevAnswer = new BigDecimal(numbers.pop().toString())
                 .stripTrailingZeros();
-        return formatter(new BigDecimal(prevAnswer.toString())
-                .toPlainString());
+        return formatter(new BigDecimal(prevAnswer.toString()).toPlainString());
     }
 
     private BigDecimal applyOp(BigDecimal secondNum, BigDecimal firstNum, String operator){
@@ -97,6 +96,7 @@ class Calculator {
     }
 
     void setCurrEquation(String currEquation){
+        this.currEquation.clear();
         for(String x: currEquation.split(" "))
             addToEquation(false, x);
     }
@@ -117,8 +117,7 @@ class Calculator {
 
     void addToHistory(String input, boolean same){
         results.addFirst(formatter(prevAnswer.toPlainString()));
-        addToEquation(false, input);
-        equations.addFirst(getCurrEquation());
+        equations.addFirst(getCurrEquation() + input);
         if(results.size() > 20) {
             equations.removeLast();
             results.removeLast();
