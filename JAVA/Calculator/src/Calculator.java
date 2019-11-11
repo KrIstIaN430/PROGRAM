@@ -1,6 +1,9 @@
 import javax.print.attribute.EnumSyntax;
 import javax.swing.text.NumberFormatter;
+import java.awt.*;
+import java.io.File;
 import java.math.RoundingMode;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -132,7 +135,8 @@ class Calculator {
 
     String formatter(String input) {
         BigDecimal in = new BigDecimal(input.replaceAll(",", ""));
-        if (input.length() > 20)
+        System.out.println(in.toString().length());
+        if (in.toString().length()> 11)
             df.applyPattern("0.000E0");
         else
             df.applyPattern("#,###.###############");

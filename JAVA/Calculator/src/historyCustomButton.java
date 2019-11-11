@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.net.URL;
 import java.util.Iterator;
 
 class historyCustomButton extends JButton implements MouseListener{
@@ -12,12 +14,14 @@ class historyCustomButton extends JButton implements MouseListener{
     private String res;
     private boolean mouseEntered = false;
     private boolean mousePressed = false;
-    private Dimension size = new Dimension(400,100);
+    private Dimension size = new Dimension(380,100);
+    private Font googleFont;
+    private Font robotoFont;
     //private Dimension arc = new Dimension((int)Math.sqrt(size.width), (int)Math.sqrt(size.height));
     //private JPanel button = new JPanel();
 
 
-    historyCustomButton(String eq, String res) {
+    historyCustomButton(String eq, String res){
         super();
         this.eq = eq;
         this.res = res;
@@ -25,6 +29,12 @@ class historyCustomButton extends JButton implements MouseListener{
         addMouseListener(this);
         setSize(size.width, size.height);
         setFocusable(true);
+        try {
+            googleFont = getFont("GoogleSans-Regular.ttf").deriveFont(Font.BOLD, 40);
+            robotoFont = getFont("Roboto-Regular.ttf").deriveFont(Font.PLAIN, 20);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -32,9 +42,10 @@ class historyCustomButton extends JButton implements MouseListener{
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         // turn on anti-alias mode
-        //Graphics2D antiAlias = (Graphics2D)g;
-        //antiAlias.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
+        Graphics2D antiAlias = (Graphics2D)g;
+        antiAlias.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
         // draw white rectangle
         if(mouseEntered && !mousePressed)
             g.setColor(Color.decode("#0FBCFE"));
@@ -56,10 +67,19 @@ class historyCustomButton extends JButton implements MouseListener{
         }
         //g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc.width, arc.height);
 
-        g.setColor(Color.WHITE);
 
-        g.drawString(eq, 20, 20);
-        g.drawString(res, 20, 50);
+        g.setColor(Color.WHITE);
+        g.setFont(robotoFont);
+        FontMetrics fontMetrics = g.getFontMetrics();
+        g.drawString(eq, 370 - fontMetrics.stringWidth(eq), 20);
+        //g.drawString(eq, 20, 20);
+
+
+        g.setFont(googleFont);
+        fontMetrics = g.getFontMetrics();
+
+        g.drawString(res, 370 - fontMetrics.stringWidth(res), 70);
+        //g.drawString(res, 20, 70);
 
 
 
@@ -112,5 +132,9 @@ class historyCustomButton extends JButton implements MouseListener{
         mouseEntered = false;
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         repaint();
+    }
+    private Font getFont(String fileName) throws Exception {
+        URL url = getClass().getResource(fileName);
+        return Font.createFont(Font.TRUETYPE_FONT, new File(url.toURI()));
     }
 }

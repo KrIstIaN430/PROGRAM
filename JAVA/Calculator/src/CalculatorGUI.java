@@ -377,7 +377,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         historyCustomButton[] history = new historyCustomButton[calc.getResults().size()];
         int ctr = 0;
         while(ctr < calc.getResults().size()){
-            history[ctr] = new historyCustomButton(calc.getEquations().get(ctr) + "=",
+            history[ctr] = new historyCustomButton(calc.getEquations().get(ctr) + " =",
                                                     calc.getResults().get(ctr));
             historyButtonsPanel.add(history[ctr]);
             history[ctr].addActionListener(e -> {
