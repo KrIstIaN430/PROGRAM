@@ -8,30 +8,27 @@ import java.io.File;
 import java.net.URL;
 import java.util.Iterator;
 
-class historyCustomButton extends JButton implements MouseListener{
+class standardCustomButtons extends JButton implements MouseListener{
 
-    private String eq;
+    private String name;
     private String res;
     private boolean mouseEntered = false;
     private boolean mousePressed = false;
-    private Dimension size = new Dimension(380,100);
+    private Dimension size = new Dimension(73,62);
     private Font googleFont;
     private Font robotoFont;
-    //private Dimension arc = new Dimension((int)Math.sqrt(size.width), (int)Math.sqrt(size.height));
-    //private JPanel button = new JPanel();
 
 
-    historyCustomButton(String eq, String res){
+    standardCustomButtons(String name){
         super();
-        this.eq = eq;
-        this.res = res;
+        this.name = name;
         enableInputMethods(true);
         addMouseListener(this);
         setSize(size.width, size.height);
         setFocusable(true);
         try {
-            googleFont = getFont("GoogleSans-Regular.ttf").deriveFont(Font.BOLD, 40);
-            robotoFont = getFont("Roboto-Regular.ttf").deriveFont(Font.PLAIN, 20);
+            googleFont = getFont("GoogleSans-Regular.ttf").deriveFont(Font.BOLD, 10);
+            robotoFont = getFont("Roboto-Regular.ttf").deriveFont(Font.PLAIN, 25);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -69,17 +66,36 @@ class historyCustomButton extends JButton implements MouseListener{
 
 
         g.setColor(Color.WHITE);
-        g.setFont(robotoFont);
-        FontMetrics fontMetrics = g.getFontMetrics();
-        g.drawString(eq, 370 - fontMetrics.stringWidth(eq), 20);
+        FontMetrics fontMetrics = g.getFontMetrics(robotoFont);
+        int widthCenter = (getWidth() - fontMetrics.stringWidth(name)) / 2;
+        int heightCenter = ((getHeight() - fontMetrics.getHeight()) / 2) + fontMetrics.getAscent();
+        //drawString(g, robotoFont, name, widthCenter, heightCenter);
+        //g.drawString(name, widthCenter, heightCenter);
+
+        /*
+        int height = fontMetrics.getHeight();
+        g.drawString(name, widthCenter, height);
+        g.setColor(Color.red);
+        g.drawLine(0, height, getWidth(), height);
+        g.setColor(Color.BLACK);
+        g.drawLine(0, height - fontMetrics.getAscent(), getWidth(), height - fontMetrics.getAscent());
+
+        g.setColor(Color.ORANGE);
+        g.drawLine(0, height + fontMetrics.getDescent(), getWidth(), height + fontMetrics.getDescent());
+        g.setColor(Color.green);
+        //g.drawLine(0, fontMetrics.getHeight(), getWidth(), fontMetrics.getHeight());
         //g.drawString(eq, 20, 20);
 
+         */
 
-        g.setFont(googleFont);
-        fontMetrics = g.getFontMetrics();
+        drawStringCenter(g, name);
+        //g.setFont(googleFont);
+        //fontMetrics = g.getFontMetrics();
 
-        g.drawString(res, 370 - fontMetrics.stringWidth(res), 70);
+        //g.drawString(res, 50 - fontMetrics.stringWidth(res), 30);
         //g.drawString(res, 20, 70);
+
+
 
 
 
@@ -90,6 +106,19 @@ class historyCustomButton extends JButton implements MouseListener{
         //g.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, arc.width, arc.height);
 
     }
+    private void drawStringCenter(Graphics g, String text){
+        String[] split = text.split("\n");
+        Font font = robotoFont.deriveFont(Font.PLAIN, 25 - (7 * split.length) + (5 * getHeight() / 40 ));
+        FontMetrics fm = g.getFontMetrics(font);
+        g.setFont(font);
+        for (int i = 1; i <= split.length; i++) {
+            int centerWidth = (getWidth() - fm.stringWidth(split[i - 1])) / 2;
+            int centerHeight = ((getHeight() - (fm.getHeight() * split.length)) / 2)
+                    + fm.getAscent() * i;
+            g.drawString(split[i - 1], centerWidth, centerHeight);
+        }
+    }
+
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(getWidth(), getHeight());

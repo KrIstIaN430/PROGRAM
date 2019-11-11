@@ -84,7 +84,7 @@ class Calculator {
         return equations;
     }
     LinkedList<String> getResults(){
-        return  results;
+        return results;
     }
     void clearEqRes(){
         equations.clear();
@@ -98,12 +98,14 @@ class Calculator {
         currEquation.clear();
     }
 
+    void removeLast(){
+        currEquation.removeLast();
+    }
     void setCurrEquation(String currEquation){
         this.currEquation.clear();
         for(String x: currEquation.split(" "))
             addToEquation(false, x);
     }
-
     String getCurrEquation(){
         StringBuilder current = new StringBuilder();
         iterCurr = currEquation.iterator();
@@ -118,7 +120,7 @@ class Calculator {
         return current.toString();
     }
 
-    void addToHistory(String input, boolean same){
+    void addToHistory(String input){
         results.addFirst(formatter(prevAnswer.toPlainString()));
         equations.addFirst(getCurrEquation() + input);
         if(results.size() > 20) {
@@ -127,7 +129,20 @@ class Calculator {
         }
         clearEquation();
     }
-
+    boolean isDecimalZero(String input){
+        BigDecimal in = new BigDecimal(input.replaceAll(",", ""));
+        return in.subtract(new BigDecimal(in.intValue())).compareTo(BigDecimal.ZERO) == 0;
+    }
+    boolean isZero(StringBuilder input){
+        BigDecimal in = new BigDecimal(input.toString().replaceAll(",", ""));
+        return in.compareTo(BigDecimal.ZERO) == 0;
+    }
+    boolean isDividebyZero(StringBuilder input){
+        BigDecimal in = new BigDecimal(input.toString().replaceAll(",", ""));
+        if (currEquation.isEmpty())
+            return false;
+        return currEquation.getLast().equals("/") && in.compareTo(BigDecimal.ZERO) == 0;
+    }
     private boolean isOperator(String x){
         return x.equals("*") || x.equals("/") || x.equals("+") || x.equals("-");
     }
@@ -135,9 +150,8 @@ class Calculator {
 
     String formatter(String input) {
         BigDecimal in = new BigDecimal(input.replaceAll(",", ""));
-        System.out.println(in.toString().length());
         if (in.toString().length()> 11)
-            df.applyPattern("0.000E0");
+            df.applyPattern("0.00000000E0");
         else
             df.applyPattern("#,###.###############");
         return df.format(in);
