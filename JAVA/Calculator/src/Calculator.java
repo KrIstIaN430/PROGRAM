@@ -17,6 +17,7 @@ class Calculator {
     private BigDecimal prevAnswer = new BigDecimal(0);
     private Iterator iterCurr;
     private DecimalFormat df = new DecimalFormat();
+    private int offset = 0;
     Calculator(){
 
     }
@@ -71,9 +72,6 @@ class Calculator {
         return ((stackOp.equals("+") || stackOp.equals("-")) && (listOp.equals("*") || listOp.equals("/")));
     }
 
-    String getLast(){
-        return currEquation.getLast();
-    }
     void addToEquation(boolean op, String name){
         if (op)
             currEquation.removeLast();
@@ -89,6 +87,7 @@ class Calculator {
     void clearEqRes(){
         equations.clear();
         results.clear();
+        offset = 0;
     }
     String getPrevAnswer(){
         return prevAnswer.toPlainString();
@@ -120,18 +119,19 @@ class Calculator {
         return current.toString();
     }
 
-    void addToHistory(String input){
-        results.addFirst(formatter(prevAnswer.toPlainString()));
-        equations.addFirst(getCurrEquation() + input);
+    int addToHistory(String input, boolean fromHistory){
+        results.addLast(formatter(prevAnswer.toPlainString()));
+        if(fromHistory)
+            equations.addLast(getCurrEquation());
+        else
+            equations.addLast(getCurrEquation() + input);
         if(results.size() > 20) {
-            equations.removeLast();
-            results.removeLast();
+            equations.removeFirst();
+            results.removeFirst();
+            offset++;
         }
         clearEquation();
-    }
-    boolean isDecimalZero(String input){
-        BigDecimal in = new BigDecimal(input.replaceAll(",", ""));
-        return in.subtract(new BigDecimal(in.intValue())).compareTo(BigDecimal.ZERO) == 0;
+        return offset;
     }
     boolean isZero(StringBuilder input){
         BigDecimal in = new BigDecimal(input.toString().replaceAll(",", ""));

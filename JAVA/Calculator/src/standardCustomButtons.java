@@ -108,7 +108,7 @@ class standardCustomButtons extends JButton implements MouseListener{
     }
     private void drawStringCenter(Graphics g, String text){
         String[] split = text.split("\n");
-        Font font = robotoFont.deriveFont(Font.PLAIN, 25 - (7 * split.length) + (5 * getHeight() / 40 ));
+        Font font = robotoFont.deriveFont(Font.PLAIN, 25 - (7 * split.length) + (5 * getHeight() / 40));
         FontMetrics fm = g.getFontMetrics(font);
         g.setFont(font);
         for (int i = 1; i <= split.length; i++) {
@@ -150,8 +150,6 @@ class standardCustomButtons extends JButton implements MouseListener{
     @Override
     public void mouseEntered(MouseEvent e) {
         mouseEntered = true;
-        setCursor(new Cursor(Cursor.HAND_CURSOR));
-
         repaint();
     }
 
@@ -162,6 +160,7 @@ class standardCustomButtons extends JButton implements MouseListener{
         repaint();
     }
     private Font getFont(String fileName) throws Exception {
+        //TODO improve exception handling
         URL url = getClass().getResource(fileName);
         return Font.createFont(Font.TRUETYPE_FONT, new File(url.toURI()));
     }

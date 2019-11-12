@@ -71,14 +71,14 @@ class historyCustomButton extends JButton implements MouseListener{
         g.setColor(Color.WHITE);
         g.setFont(robotoFont);
         FontMetrics fontMetrics = g.getFontMetrics();
-        g.drawString(eq, 370 - fontMetrics.stringWidth(eq), 20);
+        g.drawString(eq, 365 - fontMetrics.stringWidth(eq), 20);
         //g.drawString(eq, 20, 20);
 
 
         g.setFont(googleFont);
         fontMetrics = g.getFontMetrics();
 
-        g.drawString(res, 370 - fontMetrics.stringWidth(res), 70);
+        g.drawString(res, 365 - fontMetrics.stringWidth(res), 70);
         //g.drawString(res, 20, 70);
 
 

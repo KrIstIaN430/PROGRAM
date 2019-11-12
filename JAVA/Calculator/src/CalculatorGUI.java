@@ -4,9 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.Iterator;
-import java.util.LinkedList;
 
 class CalculatorGUI extends MouseAdapter implements ActionListener {
     private JPanel calculatorCards;
@@ -79,7 +76,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         calculatorButtons.add(standardPanButton);
         calculatorButtons.add(tempButton);
         //-----------STANDARD CALCULATOR PANEL
-
+        //TODO improve exception handling
         BufferedImage myPicture = ImageIO.read(getClass().getResource("/images/standardLogo.PNG"));
         JLabel standardLabel = new JLabel(new ImageIcon(myPicture));
         myPicture = ImageIO.read(getClass().getResource("/images/historyLabel.PNG"));
@@ -90,7 +87,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         //historyPanel.add(historyLabel, BorderLayout.LINE_START);
         historyPanel.add(historyButton, BorderLayout.LINE_END);
         historyPanel.setPreferredSize(new Dimension(40, 40));
-
+        historyPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         historyButtonsPanel.setLayout(new BoxLayout(historyButtonsPanel, BoxLayout.PAGE_AXIS));
         //standardTop.setMaximumSize(new Dimension(360, 200));
 
@@ -279,9 +276,10 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
             else
                 inputOutput.setText(calc.formatter(input.toString()));
             opFlag = false;
+            fromHistory = false;
         }else if(name.equals("Clear\nHistory")) {
             calc.clearEqRes();
-            updateHistory();
+            updateHistory(0, true);
             return;
         } else {
             switch (name) {
@@ -302,7 +300,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     else
                         calc.addToEquation(opFlag, name);
                     equation.setText(calc.getCurrEquation());
-                    if(isDividebyZero(input))
+                    if(isDivisorZero(input))
                         disabled = true;
                     else
                         tempOutput.setText(calc.calculate(input.toString(), overwrite));
@@ -320,19 +318,17 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     return;
                 case "=":
                     if (!calc.getCurrEquation().isEmpty())
-                        if(isDividebyZero(input))
+                        if(isDivisorZero(input))
                             disabled = true;
                         else if(!tempOutput.getText().isEmpty())
                             inputOutput.setText(tempOutput.getText());
-                        else if(fromHistory)
-                            inputOutput.setText(calc.calculate(input.toString(), overwrite));
-                    calc.addToHistory(input.toString());
-                    updateHistory();
+                    updateHistory(calc.addToHistory(input.toString(), fromHistory), false);
                     equation.setText("");
                     tempOutput.setText("");
                     overwrite = true;
                     prevOp = "";
                     opFlag = false;
+                    fromHistory = false;
                     return;
                 case "C":
                     calc.clearEquation();
@@ -342,6 +338,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     dotFlag = false;
                     overwrite = true;
                     prevOp = "";
+                    fromHistory = false;
                     return;
                 case "DEL":
                     if(!overwrite) {
@@ -350,8 +347,9 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                         input.setLength(input.length() - 1);
                         if (input.length() == 0)
                             input.append(0);
-                        if(!calc.isDecimalZero(input.toString()))
+                        if(!dotFlag) {
                             inputOutput.setText(calc.formatter(input.toString()));
+                        }
                         else
                             inputOutput.setText(input.toString());
                         if(calc.isZero(input)) {
@@ -375,27 +373,27 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     break;
             }
         }
-        if(!isDividebyZero(input))
+        if(!isDivisorZero(input))
             tempOutput.setText(calc.calculate(input.toString(), overwrite));
     }
 
-    private boolean isDividebyZero(StringBuilder input){
+    private boolean isDivisorZero(StringBuilder input){
         if(calc.isDividebyZero(input)) {
             tempOutput.setText("Cannot divide by 0");
             return true;
         }
         return false;
     }
-    private void updateHistory(){
-        historyButtonsPanel.removeAll();
-        historyCustomButton[] history = new historyCustomButton[calc.getResults().size()];
-        int ctr = 0;
-        while(ctr < calc.getResults().size()){
-            history[ctr] = new historyCustomButton(calc.getEquations().get(ctr) + " =",
-                                                    calc.getResults().get(ctr));
-            historyButtonsPanel.add(history[ctr]);
-            history[ctr].addActionListener(e -> {
-                int x = Integer.parseInt(((JComponent) e.getSource()).getName());
+    private void updateHistory(int offset, boolean clear){
+        if (clear)
+            historyButtonsPanel.removeAll();
+        else {
+            int size = calc.getResults().size() - 1;
+            historyCustomButton history = new historyCustomButton(calc.getEquations().getLast() + " =", //TODO FIX DOUBLE SPACE
+                    calc.getResults().getLast());
+            historyButtonsPanel.add(history, 0);
+            history.addActionListener(e -> {
+                int x = Integer.parseInt(((JComponent) e.getSource()).getName()) - offset;
                 opFlag = true;
                 overwrite = true;
                 fromHistory = true;
@@ -403,11 +401,11 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                 equation.setText(calc.getEquations().get(x));
                 inputOutput.setText(calc.getResults().get(x));
             });
-            history[ctr].setBorder(null);
-            history[ctr].setName(Integer.toString(ctr));
-            ctr++;
+            history.setBorder(null);
+            history.setName(Integer.toString(size + offset));
+
         }
-        historyWindow.revalidate();
+        historyWindow.repaint();
     }
     public static void main(String[] args) throws IOException {
         new CalculatorGUI();
