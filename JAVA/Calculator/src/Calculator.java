@@ -21,13 +21,9 @@ class Calculator {
     Calculator(){
 
     }
-    String calculate(String input, boolean same) {
+    String calculate() {
         Stack<BigDecimal> numbers = new Stack<>();
         Stack<String> operators = new Stack<>();
-        if(same)
-            addToEquation(false, prevAnswer.toPlainString());
-        else
-            addToEquation(false, input);
         iterCurr = currEquation.iterator();
         while (iterCurr.hasNext()) {
             String x = (String) iterCurr.next();
@@ -97,6 +93,10 @@ class Calculator {
         currEquation.clear();
     }
 
+    void clearPrevAnswer(){
+        prevAnswer = new BigDecimal(0);
+    }
+
     void removeLast(){
         currEquation.removeLast();
     }
@@ -110,21 +110,31 @@ class Calculator {
         iterCurr = currEquation.iterator();
         while(iterCurr.hasNext()){
             String x = (String) iterCurr.next();
-            if (isOperator(x))
-                current.append(x);
-            else
-                current.append(formatter(x));
-            current.append(" ");
+            if(!x.equals("")) {
+                current.append(" ");
+                if (isOperator(x))
+                    current.append(x);
+                else
+                    current.append(formatter(x));
+            }
         }
+        current.append(" ");
         return current.toString();
     }
 
-    int addToHistory(String input, boolean fromHistory){
-        results.addLast(formatter(prevAnswer.toPlainString()));
-        if(fromHistory)
-            equations.addLast(getCurrEquation());
-        else
+    int addToHistory(String input, boolean fromHistory, boolean divideByZero){
+        if (divideByZero){
             equations.addLast(getCurrEquation() + input);
+            results.addLast("Cannot divide by 0");
+        }
+        else if(fromHistory) {
+            equations.addLast(getCurrEquation());
+            results.addLast(calculate());
+        }
+        else {
+            equations.addLast(getCurrEquation() + input);
+            results.addLast(formatter(prevAnswer.toPlainString()));
+        }
         if(results.size() > 20) {
             equations.removeFirst();
             results.removeFirst();
@@ -133,11 +143,7 @@ class Calculator {
         clearEquation();
         return offset;
     }
-    boolean isZero(StringBuilder input){
-        BigDecimal in = new BigDecimal(input.toString().replaceAll(",", ""));
-        return in.compareTo(BigDecimal.ZERO) == 0;
-    }
-    boolean isDividebyZero(StringBuilder input){
+    boolean isDivideByZero(StringBuilder input){
         BigDecimal in = new BigDecimal(input.toString().replaceAll(",", ""));
         if (currEquation.isEmpty())
             return false;
@@ -150,7 +156,8 @@ class Calculator {
 
     String formatter(String input) {
         BigDecimal in = new BigDecimal(input.replaceAll(",", ""));
-        if (in.toString().length()> 11)
+
+        if (in.toString().length() > 15)
             df.applyPattern("0.00000000E0");
         else
             df.applyPattern("#,###.###############");

@@ -30,7 +30,7 @@ class historyCustomButton extends JButton implements MouseListener{
         setSize(size.width, size.height);
         setFocusable(true);
         try {
-            googleFont = getFont("GoogleSans-Regular.ttf").deriveFont(Font.BOLD, 40);
+            googleFont = getFont("GoogleSans-Regular.ttf").deriveFont(Font.PLAIN, 40);
             robotoFont = getFont("Roboto-Regular.ttf").deriveFont(Font.PLAIN, 20);
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,7 +77,11 @@ class historyCustomButton extends JButton implements MouseListener{
 
         g.setFont(googleFont);
         fontMetrics = g.getFontMetrics();
-
+        while(fontMetrics.stringWidth(res) >= getWidth() - 12){
+            googleFont = googleFont.deriveFont((float) (googleFont.getSize() - 1));
+            g.setFont(googleFont);
+            fontMetrics = g.getFontMetrics();
+        }
         g.drawString(res, 365 - fontMetrics.stringWidth(res), 70);
         //g.drawString(res, 20, 70);
 
