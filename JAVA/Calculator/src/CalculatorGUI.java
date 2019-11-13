@@ -6,53 +6,61 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 class CalculatorGUI extends MouseAdapter implements ActionListener {
+    private Calculator calc = new Calculator();
     private JPanel calculatorCards;
-    private JButton standardPanButton = new JButton();
-    private JButton tempButton = new JButton();
+    private JPanel historyButtonsPanel = new JPanel();
     private JTextField inputOutput = new JTextField("0");
     private JTextField equation = new JTextField();
     private JTextField tempOutput = new JTextField();
-    private Calculator calc = new Calculator();
     private JDialog historyWindow = new JDialog();
+    private JButton standardPanButton = new JButton();
+    private JButton tempButton = new JButton();
     private JButton historyButton = new JButton();
-    private JPanel historyButtonsPanel = new JPanel();
     private boolean overwrite = true;
     private boolean opFlag = false;
     private boolean dotFlag = false;
     private boolean disabled = false;
     private boolean fromHistory = false;
-    private String prevOp = "";
     private int offset = 0;
-    JButton testButton = new JButton();
+
     private CalculatorGUI() throws IOException {
+        //-----Frame and Panels-----
         JFrame frame = new JFrame("Calculator");
-        frame.setLayout(new GridBagLayout());
         historyWindow.setTitle("History");
         JScrollPane historyPane = new JScrollPane(historyButtonsPanel);
         JPanel calculatorButtons = new JPanel();
         JPanel standardPanel = new JPanel(new BorderLayout());
+        JPanel tempPanel = new JPanel();
         JPanel standardTop = new JPanel();
         JPanel titleHistory = new JPanel(new BorderLayout());
         JPanel historyPanel = new JPanel(new BorderLayout());
         JPanel screenPanel = new JPanel();
-        screenPanel.setLayout(new BoxLayout(screenPanel, BoxLayout.PAGE_AXIS));
+        JPanel standardLabelPanel = new JPanel();
         JPanel standCalcButtons = new JPanel(new GridLayout(5, 4));
         String[] standardButtonName = {"Clear\nHistory", "C", "DEL", "/", "7", "8", "9", "*", "4", "5", "6", "-",
                 "1", "2", "3", "+", "+/-", "0", ".", "="};
-        standardCustomButtons[] standardButtons= new standardCustomButtons[20];
-        //TODO ARRANGE DECLARATIONS
+
+
+        //-----SetLayout-----
+
+        frame.setLayout(new GridBagLayout());
+        screenPanel.setLayout(new BoxLayout(screenPanel, BoxLayout.PAGE_AXIS));
+        calculatorButtons.setLayout(new BoxLayout(calculatorButtons, BoxLayout.PAGE_AXIS));
+        standardTop.setLayout(new BoxLayout(standardTop, BoxLayout.PAGE_AXIS));
+        historyButtonsPanel.setLayout(new BoxLayout(historyButtonsPanel, BoxLayout.PAGE_AXIS));
+
+
+        //-----Buttons-----
+
         standardPanButton.setActionCommand("STANDARD BUTTON");
         standardPanButton.addActionListener(this);
-        tempButton.addActionListener(this);
-
-        calculatorButtons.setLayout(new BoxLayout(calculatorButtons, BoxLayout.PAGE_AXIS));
-
         standardPanButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         standardPanButton.setBorder(null);
         standardPanButton.addMouseListener(this);
         standardPanButton.setIcon(new ImageIcon(getClass().getResource("/images/standard.PNG")));
         standardPanButton.setPreferredSize(new Dimension(70, 70));
 
+        tempButton.addActionListener(this);
         tempButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         tempButton.setBorder(null);
         tempButton.addMouseListener(this);
@@ -65,18 +73,44 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         historyButton.setBorder(null);
         historyButton.setIcon(new ImageIcon(getClass().getResource("/images/history.PNG")));
 
+
+        //The "keypad"
+        standardCustomButtons[] standardButtons = new standardCustomButtons[20];
+        for (int i = 0; i < 20; i++) {
+            standardButtons[i] = new standardCustomButtons(standardButtonName[i]);
+            standardButtons[i].setName(standardButtonName[i]);
+            standardButtons[i].addActionListener(this);
+            standardButtons[i].setBorder(null);
+            standCalcButtons.add(standardButtons[i]);
+        }
+
         standardPanel.setName("Standard");
-        standardTop.setLayout(new BoxLayout(standardTop, BoxLayout.PAGE_AXIS));
+        standardPanel.add(standardTop, BorderLayout.PAGE_START);
+        standardPanel.add(standCalcButtons);
+
+        //-----Background Color-----
+
+        standardPanel.setBackground(Color.decode("#2D2D2D"));
+        screenPanel.setBackground(Color.decode("#2D2D2D"));
+        standCalcButtons.setBackground(Color.decode("#2D2D2D"));
+        standardTop.setBackground(Color.decode("#4F4F4F"));
+        calculatorButtons.setBackground(Color.decode("#222222"));
+        titleHistory.setBackground(Color.decode("#00ADEF"));
+        equation.setBackground(Color.decode("#EEEEEE"));
+        inputOutput.setBackground(Color.decode("#EEEEEE"));
+        tempOutput.setBackground(Color.decode("#EEEEEE"));
+
+        //-----SetBorders-----
+
         equation.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
         inputOutput.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
         tempOutput.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
-        screenPanel.setBackground(Color.decode("#2D2D2D"));
         screenPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
         standCalcButtons.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        standCalcButtons.setBackground(Color.decode("#2D2D2D"));
 
         calculatorButtons.add(standardPanButton);
         calculatorButtons.add(tempButton);
+
         //-----------STANDARD CALCULATOR PANEL
         //TODO improve exception handling
         BufferedImage myPicture = ImageIO.read(getClass().getResource("/images/standardLogo.PNG"));
@@ -86,48 +120,29 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         //add(picLabel);
 
         //TODO MAKE HISTORYLABEL ANIMATION
-        //historyPanel.add(historyLabel, BorderLayout.LINE_START);
         historyPanel.add(historyButton, BorderLayout.LINE_END);
         historyPanel.setPreferredSize(new Dimension(40, 40));
         historyPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        historyButtonsPanel.setLayout(new BoxLayout(historyButtonsPanel, BoxLayout.PAGE_AXIS));
-        //standardTop.setMaximumSize(new Dimension(360, 200));
 
 
-        JPanel standardLabelPanel = new JPanel();
         standardLabelPanel.add(standardLabel);
         standardLabelPanel.setMaximumSize(new Dimension(260, 40));
-        //standardLabelPanel.setIcon(new ImageIcon(getClass().getResource("/images/standardLogo.PNG")));
-        //standardLabel.setFont(new Font("Cambria", Font.PLAIN, 25));
-        //standardLabel.setForeground(Color.WHITE);
-        //standardLabel.setHorizontalAlignment(JLabel.CENTER);
-        JButton placeholder1 = new JButton("PLACEHOLDER1"); //TODO DELETE
-        JButton placeholder2 = new JButton(); //TODO DELETE
-        JButton placeholder3 = new JButton("PLACEHOLDER3"); //TODO DELETE
-        titleHistory.setBackground(Color.decode("#00ADEF"));
         titleHistory.add(standardLabel);
         titleHistory.add(historyPanel, BorderLayout.LINE_END);
         standardTop.add(titleHistory);
         standardTop.add(screenPanel);
-        standardTop.setBackground(Color.decode("#4F4F4F"));
-        standardPanel.add(standardTop, BorderLayout.PAGE_START);
-        standardPanel.add(standCalcButtons);
-
 
 
         equation.setHorizontalAlignment(SwingConstants.RIGHT);
         equation.setOpaque(true);
         equation.setEditable(false);
-        equation.setBackground(Color.decode("#EEEEEE"));
         equation.addMouseListener(this);
 
         inputOutput.setEditable(false);
         inputOutput.setHorizontalAlignment(SwingConstants.RIGHT);
         inputOutput.setOpaque(true);
-        inputOutput.setBackground(Color.decode("#EEEEEE"));
         inputOutput.addMouseListener(this);
-        inputOutput.addComponentListener(new ComponentAdapter()
-        {
+        inputOutput.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
                 printToInputOutput(inputOutput.getText());
             }
@@ -136,67 +151,42 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         tempOutput.setHorizontalAlignment(SwingConstants.RIGHT);
         tempOutput.setOpaque(true);
         tempOutput.setEditable(false);
-        tempOutput.setBackground(Color.decode("#EEEEEE"));
         tempOutput.addMouseListener(this);
-
-        JPanel tempPanel2 = new JPanel();
-        tempPanel2.add(placeholder1);
         inputOutput.setFont(new Font("Cambria", Font.PLAIN,40));
-        inputOutput.setMinimumSize(new Dimension(28, 45));
 
-        equation.setPreferredSize(new Dimension(13, 16));
+
         JPanel displayTempPanel = new JPanel(new BorderLayout());
         displayTempPanel.add(equation);
         screenPanel.add(displayTempPanel);
 
-        inputOutput.setPreferredSize(new Dimension(32, 47));
         displayTempPanel = new JPanel(new BorderLayout());
         displayTempPanel.add(inputOutput);
         screenPanel.add(displayTempPanel);
 
-        tempOutput.setPreferredSize(new Dimension(13, 16));
         displayTempPanel = new JPanel(new BorderLayout());
         displayTempPanel.add(tempOutput);
         screenPanel.add(displayTempPanel);
 
-
-
-        //TODO MOVE SOMEWHERE
-        for (int i = 0; i < 20; i++) {
-            standardButtons[i] = new standardCustomButtons(standardButtonName[i]);
-            standardButtons[i].setName(standardButtonName[i]);
-            standardButtons[i].addActionListener( this);
-            standardButtons[i].setBorder(null);
-            standCalcButtons.add(standardButtons[i]);
-        }
-
-
-        JPanel tempPanel = new JPanel();
-        tempPanel.setName("Temperature");
 
         calculatorCards = new JPanel(new CardLayout());
         calculatorCards.add(standardPanel, "Standard");
         calculatorCards.add(tempPanel, "Temperature");
 
 
-        GridBagConstraints c = new GridBagConstraints();
         //--------------------MAIN FRAME
+        GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.weighty = 0;
         c.weightx = 0;
         c.ipady = 0;
         c.gridx = 0;
-
         frame.add(calculatorButtons, c);
+
         c.gridwidth = 2;
         c.weighty = 1;
         c.weightx = 1;
         c.gridx = 1;
-
         frame.add(calculatorCards, c);
-
-        calculatorButtons.setBackground(Color.decode("#222222"));
-        standardPanel.setBackground(Color.decode("#2D2D2D"));
 
 
         historyWindow.add(historyPane);
@@ -207,8 +197,6 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         frame.setVisible(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
-
-
 
     public void mouseEntered(MouseEvent e) {
         if (e.getSource() == standardPanButton)
@@ -278,6 +266,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
             }
         }
     }
+
     private void screenUpdate(String name){
         StringBuilder input = new StringBuilder(inputOutput.getText());
         if (Character.digit(name.charAt(0), 10) >= 0) {
@@ -299,7 +288,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
             fromHistory = false;
         }else if(name.equals("Clear\nHistory")) {
             calc.clearEqRes();
-            updateHistory( true);
+            updateHistory(true);
             return;
         } else {
             switch (name) {
@@ -310,9 +299,8 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     if(!opFlag) {
                         if (overwrite)
                             calc.addToEquation(false, calc.getPrevAnswer());
-                        else {
+                        else
                             calc.addToEquation(false, input.toString());
-                        }
                     }
                     if (fromHistory) {
                         calc.addToEquation(false, name);
@@ -329,7 +317,6 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                     }
                     opFlag = true;
                     overwrite = true;
-                    prevOp = name;
                     return;
                 case ".":
                     if (!dotFlag) {
@@ -422,12 +409,13 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         }
         return false;
     }
+
     private void updateHistory(boolean clear){
         if (clear)
             historyButtonsPanel.removeAll();
         else {
             int size = calc.getResults().size();
-            historyCustomButton history = new historyCustomButton(calc.getEquations().getLast() + " =", //TODO FIX DOUBLE SPACE
+            historyCustomButton history = new historyCustomButton(calc.getEquations().getLast() + " =",
                     calc.getResults().getLast());
             historyButtonsPanel.add(history, 0);
             history.addActionListener(e -> {
@@ -447,6 +435,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         historyWindow.repaint();
         historyWindow.revalidate();
     }
+
     public static void main(String[] args) throws IOException {
         new CalculatorGUI();
     }

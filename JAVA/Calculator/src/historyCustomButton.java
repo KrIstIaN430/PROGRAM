@@ -1,12 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.net.URL;
-import java.util.Iterator;
 
 class historyCustomButton extends JButton implements MouseListener{
 
@@ -14,11 +11,8 @@ class historyCustomButton extends JButton implements MouseListener{
     private String res;
     private boolean mouseEntered = false;
     private boolean mousePressed = false;
-    private Dimension size = new Dimension(380,100);
     private Font googleFont;
     private Font robotoFont;
-    //private Dimension arc = new Dimension((int)Math.sqrt(size.width), (int)Math.sqrt(size.height));
-    //private JPanel button = new JPanel();
 
 
     historyCustomButton(String eq, String res){
@@ -27,6 +21,7 @@ class historyCustomButton extends JButton implements MouseListener{
         this.res = res;
         enableInputMethods(true);
         addMouseListener(this);
+        Dimension size = new Dimension(380, 100);
         setSize(size.width, size.height);
         setFocusable(true);
         try {
@@ -56,44 +51,29 @@ class historyCustomButton extends JButton implements MouseListener{
 
         if(mousePressed) {
             g.setColor(Color.decode("#0089D1"));
-            //g.fillRect(0,0, getWidth(), 3);
-            //g.fillRect(0,0, 3, getHeight());
             g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
             g.drawRect(1, 1, getWidth() - 3, getHeight() - 3);
             g.drawRect(2, 2, getWidth() - 5, getHeight() - 5);
-            //g.drawLine(0, getHeight() - 1, getWidth(), getHeight() - 1);
-            //g.drawLine(0,0 , getWidth(), 0);
-            //g.drawLine(0,0 , 0, getHeight());
         }
-        //g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc.width, arc.height);
 
 
         g.setColor(Color.WHITE);
         g.setFont(robotoFont);
         FontMetrics fontMetrics = g.getFontMetrics();
         g.drawString(eq, 365 - fontMetrics.stringWidth(eq), 20);
-        //g.drawString(eq, 20, 20);
 
 
         g.setFont(googleFont);
         fontMetrics = g.getFontMetrics();
         while(fontMetrics.stringWidth(res) >= getWidth() - 12){
-            googleFont = googleFont.deriveFont((float) (googleFont.getSize() - 1));
-            g.setFont(googleFont);
+            Font font = googleFont;
+            font = font.deriveFont((float) (font.getSize() - 1));
+            g.setFont(font);
             fontMetrics = g.getFontMetrics();
         }
         g.drawString(res, 365 - fontMetrics.stringWidth(res), 70);
-        //g.drawString(res, 20, 70);
-
-
-
-        //g.drawLine(0,0 , getWidth(), 0);
-        //g.drawLine(0,0 , 0, getHeight());
-        //g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, arc.width, arc.height);
-        //g.setColor(Color.decode("#c0c0c0"));
-        //g.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, arc.width, arc.height);
-
     }
+
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(getWidth(), getHeight());

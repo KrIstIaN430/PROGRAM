@@ -1,29 +1,27 @@
-import javax.print.attribute.EnumSyntax;
-import javax.swing.text.NumberFormatter;
-import java.awt.*;
-import java.io.File;
-import java.math.RoundingMode;
-import java.net.URL;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Stack;
 
 class Calculator {
-    private LinkedList<String> equations = new LinkedList<>();
+    private LinkedList<String> equations = new LinkedList<>();//change deque
     private LinkedList<String> results = new LinkedList<>();
     private LinkedList<String> currEquation = new LinkedList<>();
     private BigDecimal prevAnswer = new BigDecimal(0);
     private Iterator iterCurr;
     private DecimalFormat df = new DecimalFormat();
     private int offset = 0;
-    Calculator(){
+
+    Calculator() {
 
     }
+
     String calculate() {
         Stack<BigDecimal> numbers = new Stack<>();
         Stack<String> operators = new Stack<>();
+
         iterCurr = currEquation.iterator();
         while (iterCurr.hasNext()) {
             String x = (String) iterCurr.next();
@@ -43,6 +41,7 @@ class Calculator {
         }
         while (!operators.empty())
             numbers.push(applyOp(numbers.pop(), numbers.pop(), operators.pop()));
+        //Last in the equation is the text in the inputOutput field which is most of the time temporary
         currEquation.removeLast();
         prevAnswer = new BigDecimal(numbers.pop().toString())
                 .stripTrailingZeros();
@@ -74,38 +73,37 @@ class Calculator {
         currEquation.addLast(name.replaceAll(",", ""));
     }
 
-    LinkedList<String> getEquations(){
+    LinkedList<String> getEquations() {
         return equations;
     }
-    LinkedList<String> getResults(){
+
+    LinkedList<String> getResults() {
         return results;
     }
+
     void clearEqRes(){
         equations.clear();
         results.clear();
         offset = 0;
     }
-    String getPrevAnswer(){
+
+    String getPrevAnswer() {
         return prevAnswer.toPlainString();
     }
 
-    void clearEquation(){
+    void clearEquation() {
         currEquation.clear();
     }
 
-    void clearPrevAnswer(){
+    void clearPrevAnswer() {
         prevAnswer = new BigDecimal(0);
     }
 
-    void removeLast(){
+    void removeLast() {
         currEquation.removeLast();
     }
-    void setCurrEquation(String currEquation){
-        this.currEquation.clear();
-        for(String x: currEquation.split(" "))
-            addToEquation(false, x);
-    }
-    String getCurrEquation(){
+
+    String getCurrEquation() {
         StringBuilder current = new StringBuilder();
         iterCurr = currEquation.iterator();
         while(iterCurr.hasNext()){
@@ -122,12 +120,17 @@ class Calculator {
         return current.toString();
     }
 
-    int addToHistory(String input, boolean fromHistory, boolean divideByZero){
-        if (divideByZero){
+    void setCurrEquation(String currEquation) {
+        this.currEquation.clear();
+        for (String x : currEquation.split(" "))
+            addToEquation(false, x);
+    }
+
+    int addToHistory(String input, boolean fromHistory, boolean divideByZero) {
+        if (divideByZero) {
             equations.addLast(getCurrEquation() + input);
             results.addLast("Cannot divide by 0");
-        }
-        else if(fromHistory) {
+        } else if (fromHistory) {
             equations.addLast(getCurrEquation());
             results.addLast(calculate());
         }
@@ -135,7 +138,7 @@ class Calculator {
             equations.addLast(getCurrEquation() + input);
             results.addLast(formatter(prevAnswer.toPlainString()));
         }
-        if(results.size() > 20) {
+        if (results.size() > 20) {
             equations.removeFirst();
             results.removeFirst();
             offset++;
@@ -143,13 +146,15 @@ class Calculator {
         clearEquation();
         return offset;
     }
-    boolean isDivideByZero(StringBuilder input){
+
+    boolean isDivideByZero(StringBuilder input) {
         BigDecimal in = new BigDecimal(input.toString().replaceAll(",", ""));
         if (currEquation.isEmpty())
             return false;
         return currEquation.getLast().equals("/") && in.compareTo(BigDecimal.ZERO) == 0;
     }
-    private boolean isOperator(String x){
+
+    private boolean isOperator(String x) {
         return x.equals("*") || x.equals("/") || x.equals("+") || x.equals("-");
     }
 
@@ -163,6 +168,7 @@ class Calculator {
             df.applyPattern("#,###.###############");
         return df.format(in);
     }
+
     String negate(StringBuilder input, boolean same){
         BigDecimal in;
         if(same) {
