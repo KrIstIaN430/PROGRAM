@@ -9,13 +9,14 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
     private Calculator calc = new Calculator();
     private JPanel calculatorCards;
     private JPanel historyButtonsPanel = new JPanel();
-    private JTextField inputOutput = new JTextField("0");
-    private JTextField equation = new JTextField();
-    private JTextField tempOutput = new JTextField();
+    JTextField inputOutput = new JTextField("0"); //The main field where input/output is shown
+    JTextField equation = new JTextField(); //The field where the current equation is shown
+    JTextField tempOutput = new JTextField(); //The field where the output of the current equation is shown
     private JDialog historyWindow = new JDialog();
     private JButton standardPanButton = new JButton();
     private JButton tempButton = new JButton();
     private JButton historyButton = new JButton();
+    standardCustomButtons[] standardButtons = new standardCustomButtons[20];
     private boolean overwrite = true;
     private boolean opFlag = false;
     private boolean dotFlag = false;
@@ -23,7 +24,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
     private boolean fromHistory = false;
     private int offset = 0;
 
-    private CalculatorGUI() throws IOException {
+    CalculatorGUI() throws IOException {
         //-----Frame and Panels-----
         JFrame frame = new JFrame("Calculator");
         historyWindow.setTitle("History");
@@ -39,7 +40,6 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         JPanel standCalcButtons = new JPanel(new GridLayout(5, 4));
         String[] standardButtonName = {"Clear\nHistory", "C", "DEL", "/", "7", "8", "9", "*", "4", "5", "6", "-",
                 "1", "2", "3", "+", "+/-", "0", ".", "="};
-
 
         //-----SetLayout-----
 
@@ -75,7 +75,6 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
 
 
         //The "keypad"
-        standardCustomButtons[] standardButtons = new standardCustomButtons[20];
         for (int i = 0; i < 20; i++) {
             standardButtons[i] = new standardCustomButtons(standardButtonName[i]);
             standardButtons[i].setName(standardButtonName[i]);
@@ -172,6 +171,8 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         calculatorCards.add(standardPanel, "Standard");
         calculatorCards.add(tempPanel, "Temperature");
 
+        createKeyBindings();
+
 
         //--------------------MAIN FRAME
         GridBagConstraints c = new GridBagConstraints();
@@ -192,7 +193,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         historyWindow.add(historyPane);
         historyWindow.setMinimumSize(new Dimension(400, 500));
         historyWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
+        historyWindow.setResizable(false);
         frame.setMinimumSize(new Dimension(400, 500));
         frame.setVisible(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -277,9 +278,8 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                 overwrite = false;
                 dotFlag = false;
             }
-            input.append(name);
-            if (input.length() > 19)
-                input.setLength(input.length() - 1);
+            if (input.length() < 19)
+                input.append(name);
             if (dotFlag)
                 printToInputOutput(input.toString());
             else
@@ -435,6 +435,54 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         historyWindow.repaint();
         historyWindow.revalidate();
     }
+
+    private void createKeyBindings(){
+
+        addKeyBinding(KeyEvent.VK_0, 0,  "0");
+        addKeyBinding(KeyEvent.VK_1, 0, "1");
+        addKeyBinding(KeyEvent.VK_2, 0, "2");
+        addKeyBinding(KeyEvent.VK_3, 0, "3");
+        addKeyBinding(KeyEvent.VK_4, 0, "4");
+        addKeyBinding(KeyEvent.VK_5, 0, "5");
+        addKeyBinding(KeyEvent.VK_6, 0, "6");
+        addKeyBinding(KeyEvent.VK_7, 0, "7");
+        addKeyBinding(KeyEvent.VK_8, 0, "8");
+        addKeyBinding(KeyEvent.VK_9, 0, "9");
+        addKeyBinding(KeyEvent.VK_NUMPAD0, 0, "0");
+        addKeyBinding(KeyEvent.VK_NUMPAD1,  0,"1");
+        addKeyBinding(KeyEvent.VK_NUMPAD2,  0,"2");
+        addKeyBinding(KeyEvent.VK_NUMPAD3,  0,"3");
+        addKeyBinding(KeyEvent.VK_NUMPAD4,  0,"4");
+        addKeyBinding(KeyEvent.VK_NUMPAD5,  0,"5");
+        addKeyBinding(KeyEvent.VK_NUMPAD6,  0,"6");
+        addKeyBinding(KeyEvent.VK_NUMPAD7,  0,"7");
+        addKeyBinding(KeyEvent.VK_NUMPAD8,  0,"8");
+        addKeyBinding(KeyEvent.VK_NUMPAD9,  0,"9");
+        addKeyBinding(KeyEvent.VK_EQUALS, KeyEvent.SHIFT_DOWN_MASK, "+");
+        addKeyBinding(KeyEvent.VK_ADD,  0,"+");
+        addKeyBinding(KeyEvent.VK_UNDERSCORE, KeyEvent.SHIFT_DOWN_MASK, "-");
+        addKeyBinding(KeyEvent.VK_SUBTRACT,  0,"-");
+        addKeyBinding(KeyEvent.VK_8, KeyEvent.SHIFT_DOWN_MASK, "*");
+        addKeyBinding(KeyEvent.VK_MULTIPLY,  0,"*");
+        addKeyBinding(KeyEvent.VK_SLASH, 0, "/");
+        addKeyBinding(KeyEvent.VK_DIVIDE,  0,"/");
+        addKeyBinding(KeyEvent.VK_BACK_SPACE,  0,"DEL");
+        addKeyBinding(KeyEvent.VK_ENTER,  0,"=");
+
+    }
+
+    private void addKeyBinding(int keyCode, int mod, String id){
+        InputMap im = inputOutput.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = inputOutput.getActionMap();
+        im.put(KeyStroke.getKeyStroke(keyCode, mod), id);
+        am.put(id, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                screenUpdate(id);
+            }
+        });
+    }
+
 
     public static void main(String[] args) throws IOException {
         new CalculatorGUI();
