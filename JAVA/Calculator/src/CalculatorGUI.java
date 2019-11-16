@@ -1,17 +1,15 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.io.File;
 
 class CalculatorGUI extends MouseAdapter implements ActionListener {
     private Calculator calc = new Calculator();
     private JPanel calculatorCards;
     private JPanel historyButtonsPanel = new JPanel();
-    JTextField inputOutput = new JTextField("0"); //The main field where input/output is shown
-    JTextField equation = new JTextField(); //The field where the current equation is shown
-    JTextField tempOutput = new JTextField(); //The field where the output of the current equation is shown
+    private JTextField inputOutput = new JTextField("0"); //The main field where input/output is shown
+    private JTextField equation = new JTextField(); //The field where the current equation is shown
+    private JTextField tempOutput = new JTextField(); //The field where the output of the current equation is shown
     private JDialog historyWindow = new JDialog();
     private JButton standardPanButton = new JButton();
     private JButton tempButton = new JButton();
@@ -24,7 +22,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
     private boolean fromHistory = false;
     private int offset = 0;
 
-    CalculatorGUI() throws IOException {
+    CalculatorGUI() {
         //-----Frame and Panels-----
         JFrame frame = new JFrame("Calculator");
         historyWindow.setTitle("History");
@@ -49,6 +47,11 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         standardTop.setLayout(new BoxLayout(standardTop, BoxLayout.PAGE_AXIS));
         historyButtonsPanel.setLayout(new BoxLayout(historyButtonsPanel, BoxLayout.PAGE_AXIS));
 
+        //-----set Images-----
+
+        standardPanButton.setIcon(new ImageIcon(getClass().getResource("/images/standard.PNG")));
+        tempButton.setIcon(new ImageIcon(getClass().getResource("/images/temp.PNG")));
+        historyButton.setIcon(new ImageIcon(getClass().getResource("/images/history.PNG")));
 
         //-----Buttons-----
 
@@ -57,21 +60,18 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         standardPanButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         standardPanButton.setBorder(null);
         standardPanButton.addMouseListener(this);
-        standardPanButton.setIcon(new ImageIcon(getClass().getResource("/images/standard.PNG")));
         standardPanButton.setPreferredSize(new Dimension(70, 70));
 
         tempButton.addActionListener(this);
         tempButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         tempButton.setBorder(null);
         tempButton.addMouseListener(this);
-        tempButton.setIcon(new ImageIcon(getClass().getResource("/images/temp.PNG")));
         tempButton.setPreferredSize(new Dimension(70, 70));
 
         historyButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         historyButton.addActionListener(this);
         historyButton.addMouseListener(this);
         historyButton.setBorder(null);
-        historyButton.setIcon(new ImageIcon(getClass().getResource("/images/history.PNG")));
 
 
         //The "keypad"
@@ -111,14 +111,14 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         calculatorButtons.add(tempButton);
 
         //-----------STANDARD CALCULATOR PANEL
-        //TODO improve exception handling
-        BufferedImage myPicture = ImageIO.read(getClass().getResource("/images/standardLogo.PNG"));
-        JLabel standardLabel = new JLabel(new ImageIcon(myPicture));
-        myPicture = ImageIO.read(getClass().getResource("/images/historyLabel.PNG"));
-        JLabel historyLabel = new JLabel(new ImageIcon(myPicture));
+        //TODO MAKE HISTORYLABEL ANIMATION
+        //BufferedImage myPicture = ImageIO.read(getClass().getResource("/images/standardLogo.PNG"));
+        JLabel standardLabel = new JLabel(new ImageIcon(getClass().getResource("/images/standardLogo.PNG")));
+        //myPicture = ImageIO.read(getClass().getResource("/images/historyLabel.PNG"));
+        JLabel historyLabel = new JLabel(new ImageIcon(getClass().getResource("/images/historyLabel.PNG")));
         //add(picLabel);
 
-        //TODO MAKE HISTORYLABEL ANIMATION
+
         historyPanel.add(historyButton, BorderLayout.LINE_END);
         historyPanel.setPreferredSize(new Dimension(40, 40));
         historyPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -134,6 +134,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
 
         equation.setHorizontalAlignment(SwingConstants.RIGHT);
         equation.setOpaque(true);
+        equation.setFont(new Font("Cambria", Font.PLAIN,12));
         equation.setEditable(false);
         equation.addMouseListener(this);
 
@@ -151,7 +152,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         tempOutput.setOpaque(true);
         tempOutput.setEditable(false);
         tempOutput.addMouseListener(this);
-        inputOutput.setFont(new Font("Cambria", Font.PLAIN,40));
+        tempOutput.setFont(new Font("Cambria", Font.PLAIN,12));
 
 
         JPanel displayTempPanel = new JPanel(new BorderLayout());
@@ -262,6 +263,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                 if(disabled) {
                     inputOutput.setText("0");
                     disabled = false;
+                    return;
                 }
                 screenUpdate(((JComponent) e.getSource()).getName());
             }
@@ -296,6 +298,13 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                 case "/":
                 case "+":
                 case "-":
+                    if (isDivisorZero(input)) {
+                        printToInputOutput(tempOutput.getText());
+                        tempOutput.setText("");
+                        disabled = true;
+                        calc.clearEquation();
+                        return;
+                    }
                     if(!opFlag) {
                         if (overwrite)
                             calc.addToEquation(false, calc.getPrevAnswer());
@@ -333,8 +342,11 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
                         if (!tempOutput.getText().isEmpty())
                             printToInputOutput(tempOutput.getText());
                     }
-                    offset = calc.addToHistory(input.toString(), fromHistory, isDivisorZero(input));
-                    updateHistory(false);
+                    if (!disabled) {
+                        offset = calc.addToHistory(input.toString(), fromHistory, isDivisorZero(input));
+                        updateHistory(false);
+                    }
+                    calc.clearEquation();
                     equation.setText("");
                     tempOutput.setText("");
                     overwrite = true;
@@ -391,9 +403,9 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         }
     }
 
-    private void printToInputOutput(String text){
+    private void printToInputOutput(String text) { //resize the font for the output based on the length of the input
         inputOutput.setFont(new Font("Cambria", Font.PLAIN,40));
-        while(inputOutput.getGraphics().getFontMetrics().stringWidth(text) > inputOutput.getWidth() - 10){
+        while(inputOutput.getGraphics().getFontMetrics().stringWidth(text) > inputOutput.getWidth() - 10) {
             Font font = inputOutput.getFont();
             font = font.deriveFont((float) (font.getSize() - 1));
             inputOutput.setFont(font);
@@ -416,7 +428,7 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         else {
             int size = calc.getResults().size();
             historyCustomButton history = new historyCustomButton(calc.getEquations().getLast() + " =",
-                    calc.getResults().getLast());
+                    calc.getResults().getLast()); //create a button based on the last equation and result
             historyButtonsPanel.add(history, 0);
             history.addActionListener(e -> {
                 int x = Integer.parseInt(((JComponent) e.getSource()).getName()) - offset;
@@ -429,16 +441,15 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
             });
             history.setBorder(null);
             history.setName(Integer.toString(size - 1 + offset));
-            if (offset > 0)
+            if (offset > 0) //remove the last button in the list
                 historyButtonsPanel.remove(historyButtonsPanel.getComponentCount() - 1);
         }
         historyWindow.repaint();
         historyWindow.revalidate();
     }
 
-    private void createKeyBindings(){
-
-        addKeyBinding(KeyEvent.VK_0, 0,  "0");
+    private void createKeyBindings() {
+        addKeyBinding(KeyEvent.VK_0, 0, "0");
         addKeyBinding(KeyEvent.VK_1, 0, "1");
         addKeyBinding(KeyEvent.VK_2, 0, "2");
         addKeyBinding(KeyEvent.VK_3, 0, "3");
@@ -449,29 +460,29 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         addKeyBinding(KeyEvent.VK_8, 0, "8");
         addKeyBinding(KeyEvent.VK_9, 0, "9");
         addKeyBinding(KeyEvent.VK_NUMPAD0, 0, "0");
-        addKeyBinding(KeyEvent.VK_NUMPAD1,  0,"1");
-        addKeyBinding(KeyEvent.VK_NUMPAD2,  0,"2");
-        addKeyBinding(KeyEvent.VK_NUMPAD3,  0,"3");
-        addKeyBinding(KeyEvent.VK_NUMPAD4,  0,"4");
-        addKeyBinding(KeyEvent.VK_NUMPAD5,  0,"5");
-        addKeyBinding(KeyEvent.VK_NUMPAD6,  0,"6");
-        addKeyBinding(KeyEvent.VK_NUMPAD7,  0,"7");
-        addKeyBinding(KeyEvent.VK_NUMPAD8,  0,"8");
-        addKeyBinding(KeyEvent.VK_NUMPAD9,  0,"9");
+        addKeyBinding(KeyEvent.VK_NUMPAD1, 0, "1");
+        addKeyBinding(KeyEvent.VK_NUMPAD2, 0, "2");
+        addKeyBinding(KeyEvent.VK_NUMPAD3, 0, "3");
+        addKeyBinding(KeyEvent.VK_NUMPAD4, 0, "4");
+        addKeyBinding(KeyEvent.VK_NUMPAD5, 0, "5");
+        addKeyBinding(KeyEvent.VK_NUMPAD6, 0, "6");
+        addKeyBinding(KeyEvent.VK_NUMPAD7, 0, "7");
+        addKeyBinding(KeyEvent.VK_NUMPAD8, 0, "8");
+        addKeyBinding(KeyEvent.VK_NUMPAD9, 0, "9");
         addKeyBinding(KeyEvent.VK_EQUALS, KeyEvent.SHIFT_DOWN_MASK, "+");
-        addKeyBinding(KeyEvent.VK_ADD,  0,"+");
+        addKeyBinding(KeyEvent.VK_ADD, 0, "+");
         addKeyBinding(KeyEvent.VK_UNDERSCORE, KeyEvent.SHIFT_DOWN_MASK, "-");
-        addKeyBinding(KeyEvent.VK_SUBTRACT,  0,"-");
+        addKeyBinding(KeyEvent.VK_SUBTRACT, 0, "-");
         addKeyBinding(KeyEvent.VK_8, KeyEvent.SHIFT_DOWN_MASK, "*");
-        addKeyBinding(KeyEvent.VK_MULTIPLY,  0,"*");
+        addKeyBinding(KeyEvent.VK_MULTIPLY, 0, "*");
         addKeyBinding(KeyEvent.VK_SLASH, 0, "/");
-        addKeyBinding(KeyEvent.VK_DIVIDE,  0,"/");
-        addKeyBinding(KeyEvent.VK_BACK_SPACE,  0,"DEL");
-        addKeyBinding(KeyEvent.VK_ENTER,  0,"=");
+        addKeyBinding(KeyEvent.VK_DIVIDE, 0, "/");
+        addKeyBinding(KeyEvent.VK_BACK_SPACE, 0, "DEL");
+        addKeyBinding(KeyEvent.VK_ENTER, 0, "=");
 
     }
 
-    private void addKeyBinding(int keyCode, int mod, String id){
+    private void addKeyBinding(int keyCode, int mod, String id) {
         InputMap im = inputOutput.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = inputOutput.getActionMap();
         im.put(KeyStroke.getKeyStroke(keyCode, mod), id);
@@ -483,8 +494,30 @@ class CalculatorGUI extends MouseAdapter implements ActionListener {
         });
     }
 
+    private static boolean checkFiles() {
+        JFrame popUp = new JFrame();
+        String[] filesToCheck = {"calculator.java", "StandardCustomButtons.java" , "HistoryCustomButton.java",
+                "GoogleSans-Regular.ttf", "Roboto-Regular.ttf", "images/standard.png", "images/standardHover2.png",
+                "images/standardPressed.png", "images/temp.png", "images/tempHover2.png", "images/tempPressed.png",
+                "images/history.png", "images/historyHover.png", "images/HistoryPressed.png"};
+        File f;
+        StringBuilder missingFiles = new StringBuilder();
+        for (String file : filesToCheck) {
+            f = new File("src", file);
+            if(!f.exists()){
+                missingFiles.append(file).append("\n");
+            }
+        }
+        if (missingFiles.length() != 0) {
+            JOptionPane.showMessageDialog(popUp, "These files are missing: \n" + missingFiles,
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
 
-    public static void main(String[] args) throws IOException {
-        new CalculatorGUI();
+    public static void main(String[] args)  {
+        if(checkFiles())
+            new CalculatorGUI();
     }
 }

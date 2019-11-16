@@ -79,9 +79,12 @@ class historyCustomButton extends JButton implements MouseListener{
         return new Dimension(getWidth(), getHeight());
     }
 
+    @Override
     public Dimension getMinimumSize() {
         return getPreferredSize();
     }
+
+    @Override
     public Dimension getMaximumSize() {
         return getPreferredSize();
     }

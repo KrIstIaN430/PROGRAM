@@ -143,7 +143,6 @@ class Calculator {
             results.removeFirst();
             offset++;
         }
-        clearEquation();
         return offset;
     }
 

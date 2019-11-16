@@ -8,7 +8,6 @@ import java.net.URL;
 class standardCustomButtons extends JButton implements MouseListener{
 
     private String name;
-    private String res;
     private boolean mouseEntered = false;
     private boolean mousePressed = false;
     private Font robotoFont;
@@ -73,7 +72,6 @@ class standardCustomButtons extends JButton implements MouseListener{
     public Dimension getPreferredSize() {
         return new Dimension(getWidth(), getHeight());
     }
-
     public Dimension getMinimumSize() {
         return getPreferredSize();
     }
@@ -109,8 +107,8 @@ class standardCustomButtons extends JButton implements MouseListener{
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         repaint();
     }
+
     private Font getFont(String fileName) throws Exception {
-        //TODO improve exception handling
         URL url = getClass().getResource(fileName);
         return Font.createFont(Font.TRUETYPE_FONT, new File(url.toURI()));
     }
