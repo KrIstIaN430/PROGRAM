@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.Stack;
 
 class Calculator {
-    private LinkedList<String> equations = new LinkedList<>();//change deque
+    private LinkedList<String> equations = new LinkedList<>();
     private LinkedList<String> results = new LinkedList<>();
     private LinkedList<String> currEquation = new LinkedList<>();
     private BigDecimal prevAnswer = new BigDecimal(0);
@@ -168,6 +168,12 @@ class Calculator {
         return df.format(in);
     }
 
+    String formatter(double input) {
+        BigDecimal in = new BigDecimal(input);
+        df.applyPattern("#,###.#");
+        return df.format(in);
+    }
+
     String negate(StringBuilder input, boolean same){
         BigDecimal in;
         if(same) {
@@ -177,6 +183,29 @@ class Calculator {
         else
             in = new BigDecimal(input.toString().replaceAll(",", ""));
         return formatter(in.negate().toString());
-
+    }
+    String calculateTemp(String toConvert, String convertTo, String valueToConvert) {
+        double valueToCompute = Double.parseDouble(valueToConvert.replaceAll(",",""));
+        double computedValue = valueToCompute;
+        if (toConvert.equals(convertTo))
+            return valueToConvert;
+        if (toConvert.equals("Celsius")){
+            if (convertTo.equals("Fahrenheit"))
+                computedValue = (valueToCompute * 9/5) + 32;
+            else if (convertTo.equals("Kelvin"))
+                computedValue = valueToCompute + 273.15;
+        }
+        else if (toConvert.equals("Fahrenheit")) {
+            computedValue = (valueToCompute - 32) * 5 / 9;
+            if (convertTo.equals("Kelvin"))
+                computedValue += 273.15;
+            return String.valueOf(computedValue);
+        }
+        else if (toConvert.equals("Kelvin")) {
+            computedValue -= 273.15;
+            if (convertTo.equals("Fahrenheit"))
+                computedValue = (computedValue * 9/5) + 32;
+        }
+        return  formatter(computedValue);
     }
 }
