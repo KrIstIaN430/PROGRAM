@@ -558,13 +558,13 @@ class CalculatorGUI extends MouseAdapter {
     }
 
     public static class Temperature extends JPanel implements ActionListener, ItemListener {
-        ImageIcon celciusIcon = new ImageIcon(getClass().getResource("/images/celsius.PNG"));
+        ImageIcon celsiusIcon = new ImageIcon(getClass().getResource("/images/celsius.PNG"));
         ImageIcon fahrenheitIcon = new ImageIcon(getClass().getResource("/images/fahrenheit.PNG"));
         ImageIcon kelvinIcon = new ImageIcon(getClass().getResource("/images/kelvin.PNG"));
-        ImageIcon celciusIconPressed = new ImageIcon(getClass().getResource("/images/celsiusPressed.PNG"));
+        ImageIcon celsiusIconPressed = new ImageIcon(getClass().getResource("/images/celsiusPressed.PNG"));
         ImageIcon fahrenheitIconPressed = new ImageIcon(getClass().getResource("/images/fahrenheitPressed.PNG"));
         ImageIcon kelvinIconPressed = new ImageIcon(getClass().getResource("/images/kelvinPressed.PNG"));
-        ImageIcon celciusIconHover = new ImageIcon(getClass().getResource("/images/celsiusHover.PNG"));
+        ImageIcon celsiusIconHover = new ImageIcon(getClass().getResource("/images/celsiusHover.PNG"));
         ImageIcon fahrenheitIconHover = new ImageIcon(getClass().getResource("/images/fahrenheitHover.PNG"));
         ImageIcon kelvinIconHover = new ImageIcon(getClass().getResource("/images/kelvinHover.PNG"));
         JLabel toConvertLabel;
@@ -584,9 +584,9 @@ class CalculatorGUI extends MouseAdapter {
 
         Buttons buttons;
 
-        private boolean overwrite;
+        private boolean overwrite = true;
         Temperature() {
-            setLayout(new BorderLayout());
+            setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
             calc = new Calculator();
             try {
                 googleFont = Font.createFont(Font.TRUETYPE_FONT,
@@ -595,9 +595,6 @@ class CalculatorGUI extends MouseAdapter {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            //celciusIcon =
-
-            overwrite = true;
 
 
             JPanel conversionPanel = new JPanel();
@@ -607,24 +604,30 @@ class CalculatorGUI extends MouseAdapter {
             toConvertPanel.setLayout(new BoxLayout(toConvertPanel, BoxLayout.PAGE_AXIS));
             convertToPanel.setLayout(new BoxLayout(convertToPanel, BoxLayout.PAGE_AXIS));
 
+
             //FIXME: layout
-            JPanel buttonPanel1 = new JPanel();
+            JPanel buttonPanel1 = new JPanel(new GridBagLayout());
             toConvertLabel = new JLabel("Choose a temperature unit");
             toConvertLabel.setFont(googleFont);
             toConvertLabel.setAlignmentX(CENTER_ALIGNMENT);
             toConvertField = new JTextField("0");
             toConvertField.setEditable(false);
-            toConvertField.setPreferredSize(new Dimension(this.getWidth(), 50));
-            toConvertField.setMaximumSize(new Dimension(toConvertField.getMaximumSize().width, 50));
+            toConvertField.setPreferredSize(new Dimension(314, 40));
+            toConvertField.setMinimumSize(new Dimension(314, 25));
+            toConvertField.setMaximumSize(new Dimension(toConvertField.getMaximumSize().width, 40));
             toConvertField.setHorizontalAlignment(SwingConstants.CENTER);
             toConvertField.setFont(new Font("Cambria", Font.PLAIN, 20));
 
-            JPanel buttonPanel2 = new JPanel();
+            JPanel buttonPanel2 = new JPanel(new GridBagLayout());
             convertToLabel = new JLabel("Choose a temperature unit");
+            convertToLabel.setFont(googleFont);
             convertToLabel.setAlignmentX(CENTER_ALIGNMENT);
             convertToField = new JTextField("0");
+            convertToField.setEditable(false);
             convertToField.setHorizontalAlignment(SwingConstants.CENTER);
-            convertToField.setMaximumSize(new Dimension(toConvertField.getMaximumSize().width, 50));
+            convertToField.setPreferredSize(new Dimension(314, 40));
+            convertToField.setMinimumSize(new Dimension(314, 25));
+            convertToField.setMaximumSize(new Dimension(toConvertField.getMaximumSize().width, 40));
             convertToField.setFont(new Font("Cambria", Font.PLAIN, 20));
 
             toConvertPanel.add(buttonPanel1);
@@ -635,10 +638,9 @@ class CalculatorGUI extends MouseAdapter {
             convertToPanel.add(convertToLabel);
             convertToPanel.add(convertToField);
 
-            buttonPanel1.setBackground(Color.LIGHT_GRAY); //TODO: remove
 
             //-----To Convert------
-            toConvertC = new TempCustomRadioButton(celciusIcon, celciusIconPressed, celciusIconHover);
+            toConvertC = new TempCustomRadioButton(celsiusIcon, celsiusIconPressed, celsiusIconHover);
             toConvertF = new TempCustomRadioButton(fahrenheitIcon, fahrenheitIconPressed, fahrenheitIconHover);
             toConvertK = new TempCustomRadioButton(kelvinIcon, kelvinIconPressed, kelvinIconHover);
 
@@ -646,14 +648,34 @@ class CalculatorGUI extends MouseAdapter {
 
 
 
-            //TODO: use buttonPnel1 height as reference
-            /*
             addComponentListener(new ComponentAdapter() {
                 public void componentResized(ComponentEvent evt) {
-                    toConvertC.setPreferredSize(new Dimension(70 + ((getWidth() - 314) / 20), 70 + ((getHeight() - 461) / 20)));
+                    Dimension convSize = new Dimension(Integer.MAX_VALUE,
+                            (getHeight() - buttons.getHeight()) /2);
+                    Dimension buttonSize = new Dimension(70 + ((getHeight() - 461) / 10),
+                            70 + ((getHeight() - 461) / 10));
+                    Dimension spacingSize = new Dimension(10 + ((getWidth() - 461) / 40), 0);
+                    Font labelFont = googleFont.deriveFont((float)(15 + ((getHeight() - 461) / 40)));
+                    Font IOFont = googleFont.deriveFont((float)(20 + ((getHeight() - 461) / 40)));
+                    buttonPanel1.getComponent(1).setPreferredSize(spacingSize);
+                    buttonPanel1.getComponent(3).setPreferredSize(spacingSize);
+                    buttonPanel2.getComponent(1).setPreferredSize(spacingSize);
+                    buttonPanel2.getComponent(3).setPreferredSize(spacingSize);
+                    toConvertPanel.setSize(convSize);
+                    toConvertPanel.setMaximumSize(convSize);
+                    convertToPanel.setSize(convSize);
+                    convertToPanel.setMaximumSize(convSize);
+                    toConvertLabel.setFont(labelFont);
+                    toConvertField.setFont(IOFont);
+                    toConvertLabel.setPreferredSize(new Dimension(getWidth(), 40 + ((getHeight() - 461) / 40)));
+                    convertToLabel.setFont(labelFont);
+                    convertToField.setFont(IOFont);
+                    convertToLabel.setPreferredSize(new Dimension(getWidth(), 40 + ((getHeight() - 461) / 40)));
+                    buttonReize(buttonSize);
+                    repaint();
+                    revalidate();
                 }
                 });
-             */
 
 
             ButtonGroup toConvertBG = new ButtonGroup();
@@ -662,11 +684,13 @@ class CalculatorGUI extends MouseAdapter {
             toConvertBG.add(toConvertK);
 
             buttonPanel1.add(toConvertC);
+            buttonPanel1.add(Box.createRigidArea(new Dimension(10,0)));
             buttonPanel1.add(toConvertF);
+            buttonPanel1.add(Box.createRigidArea(new Dimension(10,0)));
             buttonPanel1.add(toConvertK);
 
             //-----Convert To------
-            convertToC = new TempCustomRadioButton(celciusIcon, celciusIconPressed, celciusIconHover);
+            convertToC = new TempCustomRadioButton(celsiusIcon, celsiusIconPressed, celsiusIconHover);
             convertToF = new TempCustomRadioButton(fahrenheitIcon, fahrenheitIconPressed, fahrenheitIconHover);
             convertToK = new TempCustomRadioButton(kelvinIcon, kelvinIconPressed, kelvinIconHover);
 
@@ -678,7 +702,6 @@ class CalculatorGUI extends MouseAdapter {
             convertToF.addItemListener(this);
             convertToK.addItemListener(this);
 
-
             ButtonGroup convertToBG = new ButtonGroup();
             convertToBG.add(convertToC);
             convertToBG.add(convertToF);
@@ -686,7 +709,9 @@ class CalculatorGUI extends MouseAdapter {
 
 
             buttonPanel2.add(convertToC);
+            buttonPanel2.add(Box.createRigidArea(new Dimension(10,0)));
             buttonPanel2.add(convertToF);
+            buttonPanel2.add(Box.createRigidArea(new Dimension(10,0)));
             buttonPanel2.add(convertToK);
 
 
@@ -694,10 +719,29 @@ class CalculatorGUI extends MouseAdapter {
             conversionPanel.add(convertToPanel);
             add(conversionPanel);
 
+            conversionPanel.setPreferredSize(new Dimension(314, 310));
             buttons = new Buttons(toConvertField, this);
-            buttons.setPreferredSize(new Dimension(0, 200));
-            //buttons.setMaximumSize(new Dimension(buttons.getPreferredSize().width, 300));
-            add(buttons, BorderLayout.PAGE_END);
+            add(buttons);
+            buttons.setMinimumSize(new Dimension(314, 151));
+            buttons.setPreferredSize(new Dimension(314, 151));
+            buttons.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
+        }
+
+        private void buttonReize(Dimension buttonSize) {
+
+            toConvertC.setPreferredSize(buttonSize);
+            toConvertF.setPreferredSize(buttonSize);
+            toConvertK.setPreferredSize(buttonSize);
+            convertToC.setPreferredSize(buttonSize);
+            convertToF.setPreferredSize(buttonSize);
+            convertToK.setPreferredSize(buttonSize);
+
+            toConvertC.update();
+            toConvertF.update();
+            toConvertK.update();
+            convertToC.update();
+            convertToF.update();
+            convertToK.update();
         }
 
         @Override
@@ -755,7 +799,6 @@ class CalculatorGUI extends MouseAdapter {
                                     toConvertLabel.getText(),
                                     convertToLabel.getText(),
                                     toConvertField.getText()));
-
             }
         }
 
@@ -798,7 +841,6 @@ class CalculatorGUI extends MouseAdapter {
                 else
                     textField.setText("-" + textField.getText());
                 break;
-
         }
     }
 
@@ -858,8 +900,6 @@ class CalculatorGUI extends MouseAdapter {
                     actionListener.actionPerformed(e);
                 }
             });
-
-
         }
     }
 
