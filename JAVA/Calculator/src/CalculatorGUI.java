@@ -1,16 +1,28 @@
+import org.json.JSONObject;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.text.DecimalFormat;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 class CalculatorGUI extends MouseAdapter {
     private JPanel calculatorCards;
     private JButton standardPanButton;
     JButton tempButton;
+    JButton currencyButton;
     StandardCalculator standard;
     Temperature temperature;
+    Currency currency;
 
     CalculatorGUI() {
 
@@ -19,17 +31,19 @@ class CalculatorGUI extends MouseAdapter {
         JPanel calculatorButtons = new JPanel();
         standardPanButton = new JButton();
         tempButton = new JButton();
+        currencyButton = new JButton();
 
         standard = new StandardCalculator();
         temperature = new Temperature();
+        currency = new Currency();
 
         calculatorCards = new JPanel(new CardLayout());
         calculatorCards.add(standard, "Standard");
         calculatorCards.add(temperature, "Temperature");
+        calculatorCards.add(currency, "Currency");
 
 
         standardPanButton.setIcon(new ImageIcon(getClass().getResource("/images/standard.PNG")));
-        standardPanButton.setActionCommand("STANDARD BUTTON");
         standardPanButton.addActionListener(e -> ((CardLayout) calculatorCards.getLayout())
                                                     .show(calculatorCards, "Standard"));
         standardPanButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -39,13 +53,23 @@ class CalculatorGUI extends MouseAdapter {
 
 
         tempButton.setIcon(new ImageIcon(getClass().getResource("/images/temp.PNG")));
-
         tempButton.addActionListener(e -> ((CardLayout) calculatorCards.getLayout())
                 .show(calculatorCards, "Temperature"));
         tempButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         tempButton.setBorder(null);
         tempButton.addMouseListener(this);
         tempButton.setPreferredSize(new Dimension(70, 70));
+
+        currencyButton.setIcon(new ImageIcon(getClass().getResource("/images/currEx.PNG")));
+        currencyButton.addActionListener(e -> {
+            ((CardLayout) calculatorCards.getLayout())
+                    .show(calculatorCards, "Currency");
+            //currency.updateExRate(); TODO: remove comment
+        });
+        currencyButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        currencyButton.setBorder(null);
+        currencyButton.addMouseListener(this);
+        currencyButton.setPreferredSize(new Dimension(70, 70));
 
         //-----SetLayout-----
 
@@ -56,6 +80,7 @@ class CalculatorGUI extends MouseAdapter {
         calculatorButtons.setBackground(Color.decode("#222222"));
         calculatorButtons.add(standardPanButton);
         calculatorButtons.add(tempButton);
+        calculatorButtons.add(currencyButton);
 
         //--------------------MAIN FRAME
         frame.add(calculatorButtons, BorderLayout.WEST);
@@ -68,7 +93,7 @@ class CalculatorGUI extends MouseAdapter {
 
 
     private static boolean checkFiles() {
-        JFrame popUp = new JFrame();
+        JFrame popUp = new JFrame(); //TODO: update files to check
         String[] filesToCheck = {"calculator.java", "StandardCustomButton.java", "HistoryCustomButton.java",
                 "GoogleSans-Regular.ttf", "Roboto-Regular.ttf", "images/standard.png", "images/standardHover2.png",
                 "images/standardPressed.png", "images/temp.png", "images/tempHover2.png", "images/tempPressed.png",
@@ -89,31 +114,44 @@ class CalculatorGUI extends MouseAdapter {
         return true;
     }
     public void mouseEntered(MouseEvent e) {
+        JButton source = (JButton) e.getSource();
         if (e.getSource() == standardPanButton)
-            standardPanButton.setIcon(new ImageIcon(getClass().getResource("/images/standardHover2.PNG")));
+            source.setIcon(new ImageIcon(getClass().getResource("/images/standardHover2.PNG")));
         else if (e.getSource() == tempButton)
-            tempButton.setIcon(new ImageIcon(getClass().getResource("/images/tempHover2.PNG")));
+            source.setIcon(new ImageIcon(getClass().getResource("/images/tempHover2.PNG")));
+        else if (e.getSource() == currencyButton)
+            source.setIcon(new ImageIcon(getClass().getResource("/images/currExHover.PNG")));
     }
 
     public void mouseExited(MouseEvent e) {
+        JButton source = (JButton) e.getSource();
         if (e.getSource() == standardPanButton)
-            standardPanButton.setIcon(new ImageIcon(getClass().getResource("/images/standard.PNG")));
+            source.setIcon(new ImageIcon(getClass().getResource("/images/standard.PNG")));
         else if (e.getSource() == tempButton)
-            tempButton.setIcon(new ImageIcon(getClass().getResource("/images/temp.PNG")));
+            source.setIcon(new ImageIcon(getClass().getResource("/images/temp.PNG")));
+        else if (e.getSource() == currencyButton)
+            source.setIcon(new ImageIcon(getClass().getResource("/images/currEx.PNG")));
     }
 
     public void mousePressed(MouseEvent e) {
+        JButton source = (JButton) e.getSource();
         if (e.getSource() == standardPanButton)
-            standardPanButton.setIcon(new ImageIcon(getClass().getResource("/images/standardPressed.PNG")));
+            source.setIcon(new ImageIcon(getClass().getResource("/images/standardPressed.PNG")));
         else if (e.getSource() == tempButton)
-            tempButton.setIcon(new ImageIcon(getClass().getResource("/images/tempPressed.PNG")));
+            source.setIcon(new ImageIcon(getClass().getResource("/images/tempPressed.PNG")));
+        else if (e.getSource() == currencyButton)
+            source.setIcon(new ImageIcon(getClass().getResource("/images/currExPressed.PNG")));
     }
 
     public void mouseReleased(MouseEvent e) {
+        JButton source = (JButton) e.getSource();
         if (e.getSource() == standardPanButton)
-            standardPanButton.setIcon(new ImageIcon(getClass().getResource("/images/standard.PNG")));
+            source.setIcon(new ImageIcon(getClass().getResource("/images/standard.PNG")));
         else if (e.getSource() == tempButton)
-            tempButton.setIcon(new ImageIcon(getClass().getResource("/images/temp.PNG")));
+            source.setIcon(new ImageIcon(getClass().getResource("/images/temp.PNG")));
+        else if (e.getSource() == currencyButton)
+            source.setIcon(new ImageIcon(getClass().getResource("/images/currEx.PNG")));
+
     }
 
     public static class StandardCalculator extends JPanel implements ActionListener, MouseListener {
@@ -381,6 +419,10 @@ class CalculatorGUI extends MouseAdapter {
                         overwrite = true;
                         return;
                     case ".":
+                        if (overwrite) {
+                            input.setLength(0);
+                            input.append("0");
+                        }
                         if (!dotFlag) {
                             input.append(".");
                             printToInputOutput(input.toString());
@@ -410,6 +452,7 @@ class CalculatorGUI extends MouseAdapter {
                         tempOutput.setText("");
                         overwrite = true;
                         opFlag = false;
+                        dotFlag = false;
                         fromHistory = false;
                         return;
                     case "C":
@@ -588,6 +631,8 @@ class CalculatorGUI extends MouseAdapter {
         Temperature() {
             setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
             calc = new Calculator();
+
+            //TODO: add Title
             try {
                 googleFont = Font.createFont(Font.TRUETYPE_FONT,
                         new File(getClass().getResource("GoogleSans-Regular.ttf").toURI()))
@@ -595,7 +640,6 @@ class CalculatorGUI extends MouseAdapter {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
 
             JPanel conversionPanel = new JPanel();
             JPanel toConvertPanel = new JPanel();
@@ -627,7 +671,7 @@ class CalculatorGUI extends MouseAdapter {
             convertToField.setHorizontalAlignment(SwingConstants.CENTER);
             convertToField.setPreferredSize(new Dimension(314, 40));
             convertToField.setMinimumSize(new Dimension(314, 25));
-            convertToField.setMaximumSize(new Dimension(toConvertField.getMaximumSize().width, 40));
+            convertToField.setMaximumSize(new Dimension(convertToField.getMaximumSize().width, 40));
             convertToField.setFont(new Font("Cambria", Font.PLAIN, 20));
 
             toConvertPanel.add(buttonPanel1);
@@ -821,7 +865,8 @@ class CalculatorGUI extends MouseAdapter {
             case "8":
             case "9":
             case "0":
-                textField.setText(textField.getText() + actionName);
+                if (textField.getText().length() <= 20)
+                    textField.setText(textField.getText() + actionName);
                 break;
             case "C":
                 textField.setText("0");
@@ -844,9 +889,223 @@ class CalculatorGUI extends MouseAdapter {
         }
     }
 
+
+    public static class Currency extends JPanel implements ActionListener, ItemListener{
+        Calculator calc;
+        HttpClient client = HttpClient.newHttpClient();
+        final String base_link = "http://data.fixer.io/api/";
+        final String access_key = "?access_key=c320677a465dffd061ec821f724a37b3";
+        JSONObject symbols;
+        JSONObject currencyRates;
+        JButton update;
+        Buttons buttons;
+        JComboBox<String> toConvertBox;
+        JComboBox<String> convertToBox;
+        JLabel exRateLabel;
+        JLabel dateUpdated;
+        JTextField toConvertField;
+        JTextField convertToField;
+        boolean overwrite = true;
+        Currency() {
+            setLayout(new GridBagLayout());
+            JPanel conversionPanel = new JPanel();
+            //TODO: add Title
+            calc = new Calculator();
+
+            JPanel toConvertPanel = new JPanel();
+            toConvertPanel.setLayout(new BoxLayout(toConvertPanel, BoxLayout.PAGE_AXIS));
+
+            JPanel toConvertComboPanel = new JPanel(new GridBagLayout());
+            toConvertBox = new JComboBox<>();
+            //toConvertBox.setMaximumSize(new Dimension(250, toConvertBox.getHeight()));
+            toConvertBox.addItemListener(this);
+
+            toConvertComboPanel.add(toConvertBox);
+
+            //toConvertBox.setPreferredSize(new Dimension(200, 25));
+            //toConvertBox.setMinimumSize(new Dimension(200, 25));
+
+
+
+            toConvertField = new JTextField("0");
+            toConvertField.setEditable(false);
+            toConvertField.setHorizontalAlignment(SwingConstants.CENTER);
+            toConvertField.setPreferredSize(new Dimension(314, 40));
+            toConvertField.setMinimumSize(new Dimension(314, 25));
+            toConvertField.setMaximumSize(new Dimension(toConvertField.getMaximumSize().width, 40));
+            //convertToField.setFont(new Font("Cambria", Font.PLAIN, 20));
+
+
+            toConvertPanel.add(toConvertComboPanel);
+            toConvertPanel.add(toConvertField);
+
+
+
+            JPanel convertToPanel = new JPanel();
+            convertToPanel.setLayout(new BoxLayout(convertToPanel, BoxLayout.PAGE_AXIS));
+
+            JPanel convertToComboPanel = new JPanel(new GridBagLayout());
+            convertToBox = new JComboBox<>();
+            convertToBox.addItemListener(this);
+
+            convertToComboPanel.add(convertToBox);
+
+            convertToField = new JTextField("0");
+            convertToField.setEditable(false);
+            convertToField.setHorizontalAlignment(SwingConstants.CENTER);
+            convertToField.setPreferredSize(new Dimension(314, 40));
+            convertToField.setMinimumSize(new Dimension(314, 25));
+            convertToField.setMaximumSize(new Dimension(convertToField.getMaximumSize().width, 40));
+            //convertToField.setFont(new Font("Cambria", Font.PLAIN, 20));
+
+            convertToPanel.add(convertToComboPanel);
+            convertToPanel.add(convertToField);
+
+            JPanel ratePanel = new JPanel(new GridBagLayout());
+
+            GridBagConstraints c = new GridBagConstraints();
+            exRateLabel = new JLabel("exchange rate");
+            dateUpdated = new JLabel("date updated");
+            update = new JButton("Update rates");
+            update.addActionListener(this);
+            c.weightx = 1;
+            c.gridwidth = 2;
+            ratePanel.add(exRateLabel, c);
+            c.gridy = 1;
+            c.gridwidth = 2;
+            ratePanel.add(dateUpdated, c);
+            c.weightx = 0;
+            c.gridx = 2;
+            c.gridy = 0;
+            c.gridheight = 2;
+            ratePanel.add(update, c);
+
+
+
+            buttons = new Buttons(toConvertField, this);
+            c = new GridBagConstraints();
+            c.fill = GridBagConstraints.BOTH;
+            c.weightx = 0.5;
+            c.weighty = 0.5;
+            c.gridy = 1;
+            add(toConvertPanel, c);
+            c.gridy = 2;
+            add(convertToPanel, c);
+            c.gridy = 3;
+            c.weighty = 0;
+            add(ratePanel, c);
+            c.gridy = 4;
+            c.weighty = 0.2;
+            add(buttons, c);
+
+            buttons.setMinimumSize(new Dimension(314, 151));
+            buttons.setPreferredSize(new Dimension(314, 151));
+            buttons.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
+            //setBackground(Color.green);
+        }
+
+        private void updateCurrencyList() {
+            symbols = new JSONObject(getUpdatedJSON("symbols")).getJSONObject("symbols");
+            SortedSet<String> countrySet = new TreeSet<>();
+
+            Iterator<String> keys = symbols.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                countrySet.add(symbols.getString(key) + " - " + key);
+            }
+            Object selected1 = toConvertBox.getSelectedItem();
+            Object selected2 = convertToBox.getSelectedItem();
+            toConvertBox.removeAllItems();
+            convertToBox.removeAllItems();
+            for (String item : countrySet) {
+                toConvertBox.addItem(item);
+                convertToBox.addItem(item);
+            }
+            if (selected1 != null) {
+                toConvertBox.setSelectedItem(selected1);
+                convertToBox.setSelectedItem(selected2);
+            }
+        }
+
+        private void updateExRate() {
+            currencyRates = new JSONObject(getUpdatedJSON("latest"));
+            //TODO: validate using "success : true/false"
+            //TODO: add check if within the same hour
+            dateUpdated.setText("Updated: " + currencyRates.getString("date"));//TODO: add time
+        }
+
+
+        private String getUpdatedJSON(String key) {
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(base_link + key + access_key)).build();
+            return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(HttpResponse::body)
+                    .join();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == update) {
+                updateExRate();
+                updateCurrencyList();
+            } else {
+                String actionName = ((JButton) e.getSource()).getName();
+                if (overwrite && !actionName.equals("+/-") && !actionName.equals("."))
+                    toConvertField.setText("");
+                if (overwrite)
+                    overwrite = false;
+                buttonAction(actionName, toConvertField);
+                if (toConvertField.getText().equals("0"))
+                    overwrite = true;
+                else if (!toConvertField.getText().contains("."))
+                    formatter(toConvertField.getText());
+                if(Double.parseDouble(toConvertField.getText()) > 0)
+                    convertToField.setText(convert(toConvertField.getText(),15));
+            }
+        }
+        private void formatter(String numbers) {
+            BigDecimal in = new BigDecimal(numbers.replaceAll(",", ""));
+            DecimalFormat df = new DecimalFormat("#,###.#");
+            toConvertField.setText(df.format(in));
+        }
+        String convert(String amount, int decimal) {
+            JSONObject rates = currencyRates.getJSONObject("rates");
+
+            if (!getFirstCurr().equals("") && !getSecondCurr().equals("")) {
+                BigDecimal bd = new BigDecimal(calc.calculateExRate(
+                        rates.getDouble(getFirstCurr()),
+                        rates.getDouble(getSecondCurr()), amount))
+                        .setScale(decimal, RoundingMode.HALF_UP);
+                return bd.toString();
+            }
+            return "0";
+        }
+        String getFirstCurr() {
+            String selected1 = (String) toConvertBox.getSelectedItem();
+            if (selected1 != null)
+                return selected1.substring(selected1.length() - 3);
+            return "";
+        }
+        String getSecondCurr() {
+            String selected2 = (String) convertToBox.getSelectedItem();
+            if (selected2 != null)
+                return selected2.substring(selected2.length() - 3);
+            return "";
+        }
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                if (!getFirstCurr().equals("") && !getSecondCurr().equals(""))
+                    exRateLabel.setText("1 " + getFirstCurr() + " = " + convert("1", 6) + " " + getSecondCurr());
+                if(Double.parseDouble(toConvertField.getText()) > 0)
+                    convertToField.setText(convert(toConvertField.getText(),15));
+            }
+        }
+    }
+
     public static class Buttons extends JPanel {
         StandardCustomButton[] numbersOnly;
         ActionListener actionListener;
+
         Buttons(JTextField textField, ActionListener actionListener) {
             this.actionListener = actionListener;
             setLayout(new GridLayout(5, 3));
@@ -887,7 +1146,7 @@ class CalculatorGUI extends MouseAdapter {
             addKeyBinding(textField, KeyEvent.VK_NUMPAD9, "9");
         }
 
-        private void addKeyBinding(JTextField textField, int keyCode, String id){
+        private void addKeyBinding(JTextField textField, int keyCode, String id) {
             InputMap im = textField.getInputMap(WHEN_IN_FOCUSED_WINDOW);
             ActionMap am = textField.getActionMap();
             im.put(KeyStroke.getKeyStroke(keyCode, 0), id);
@@ -902,7 +1161,6 @@ class CalculatorGUI extends MouseAdapter {
             });
         }
     }
-
     public static void main(String[] args) {
         if (checkFiles())
             new CalculatorGUI();

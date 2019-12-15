@@ -206,6 +206,11 @@ class Calculator {
             if (convertTo.equals("Fahrenheit"))
                 computedValue = (computedValue * 9/5) + 32;
         }
-        return  formatter(computedValue);
+        return formatter(computedValue);
+    }
+
+    double calculateExRate(Double toConvert, Double convertTo, String valueToConvert) {
+        double valueToCompute = Double.parseDouble(valueToConvert.replaceAll(",",""));
+        return (convertTo / toConvert) * valueToCompute;
     }
 }
